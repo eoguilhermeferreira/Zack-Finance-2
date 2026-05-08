@@ -1,78 +1,132 @@
 // ─── Supabase Integration ──────────────────────────────────────────────────────
-// To enable Supabase, fill in your project URL and anon key below.
-// Get these from: https://supabase.com/dashboard → Your Project → Settings → API
+// Fill in your project URL and anon key to enable Supabase.
+// Get them at: https://supabase.com/dashboard → Project → Settings → API
 //
-// Required tables (run in Supabase SQL Editor):
+// Run this SQL in Supabase SQL Editor to create the required tables:
 //
 // CREATE TABLE transactions (
-//   id TEXT PRIMARY KEY,
-//   date TEXT NOT NULL,
-//   description TEXT,
-//   amount NUMERIC,
-//   category TEXT,
-//   account TEXT,
-//   notes TEXT,
-//   user_id TEXT,
+//   id TEXT PRIMARY KEY, date TEXT NOT NULL, description TEXT, amount NUMERIC,
+//   category TEXT, account TEXT, notes TEXT, user_id UUID REFERENCES auth.users,
 //   created_at TIMESTAMPTZ DEFAULT NOW()
 // );
+// ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "own" ON transactions USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 //
 // CREATE TABLE investments (
-//   id TEXT PRIMARY KEY,
-//   name TEXT,
-//   type TEXT,
-//   ticker TEXT,
-//   invested NUMERIC,
-//   current_value NUMERIC,
-//   return_pct NUMERIC,
-//   yield_pct NUMERIC,
-//   user_id TEXT,
-//   created_at TIMESTAMPTZ DEFAULT NOW()
+//   id TEXT PRIMARY KEY, name TEXT, type TEXT, ticker TEXT, invested NUMERIC,
+//   current_value NUMERIC, return_pct NUMERIC, yield_pct NUMERIC,
+//   user_id UUID REFERENCES auth.users, created_at TIMESTAMPTZ DEFAULT NOW()
 // );
+// ALTER TABLE investments ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "own" ON investments USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 //
 // CREATE TABLE bills (
-//   id TEXT PRIMARY KEY,
-//   name TEXT,
-//   amount NUMERIC,
-//   due_day INTEGER,
-//   category TEXT,
-//   status TEXT,
-//   user_id TEXT,
+//   id TEXT PRIMARY KEY, name TEXT, amount NUMERIC, due_day INTEGER,
+//   category TEXT, status TEXT, user_id UUID REFERENCES auth.users,
 //   created_at TIMESTAMPTZ DEFAULT NOW()
 // );
+// ALTER TABLE bills ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "own" ON bills USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+//
+// CREATE TABLE goals (
+//   id TEXT PRIMARY KEY, name TEXT, monthly_target NUMERIC, description TEXT,
+//   user_id UUID REFERENCES auth.users, created_at TIMESTAMPTZ DEFAULT NOW()
+// );
+// ALTER TABLE goals ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "own" ON goals USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 //
 // CREATE TABLE chat_messages (
-//   id TEXT PRIMARY KEY,
-//   role TEXT,
-//   text TEXT,
-//   user_id TEXT,
-//   created_at TIMESTAMPTZ DEFAULT NOW()
+//   id TEXT PRIMARY KEY, role TEXT, text TEXT,
+//   user_id UUID REFERENCES auth.users, created_at TIMESTAMPTZ DEFAULT NOW()
 // );
+// ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "own" ON chat_messages USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
-// ─── CONFIGURE BELOW ──────────────────────────────────────────────────────────
+// ─── CONFIGURE HERE ───────────────────────────────────────────────────────────
 const SUPABASE_URL      = '';  // e.g. 'https://xyzcompany.supabase.co'
-const SUPABASE_ANON_KEY = '';  // e.g. 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+const SUPABASE_ANON_KEY = '';  // your anon/public key
 // ─────────────────────────────────────────────────────────────────────────────
 
 const supabaseEnabled = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
-// Minimal Supabase REST client (no CDN dependency)
+// ─── Auth token state ─────────────────────────────────────────────────────────
+let _supaToken  = localStorage.getItem('zf-supa-token') || '';
+let _supaUserId = localStorage.getItem('zf-supa-uid')   || '';
+
+const _persistAuth = (token, uid) => {
+  _supaToken  = token;
+  _supaUserId = uid;
+  if (token) {
+    localStorage.setItem('zf-supa-token', token);
+    localStorage.setItem('zf-supa-uid',   uid);
+  } else {
+    localStorage.removeItem('zf-supa-token');
+    localStorage.removeItem('zf-supa-uid');
+  }
+};
+
+const supaHeaders = () => ({
+  'Content-Type':  'application/json',
+  'apikey':        SUPABASE_ANON_KEY,
+  'Authorization': `Bearer ${_supaToken || SUPABASE_ANON_KEY}`,
+});
+
+const supaReq = async (method, path, body) => {
+  if (!supabaseEnabled) return { data: null, error: { message: 'Supabase não configurado.' } };
+  try {
+    const res  = await fetch(`${SUPABASE_URL}${path}`, {
+      method,
+      headers: { ...supaHeaders(), Prefer: 'return=representation' },
+      body:    body != null ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return { data: null, error: data };
+    return { data, error: null };
+  } catch (err) {
+    return { data: null, error: { message: err.message } };
+  }
+};
+
+// ─── Auth API ─────────────────────────────────────────────────────────────────
+
+async function supaSignUp(email, password, name) {
+  const { data, error } = await supaReq('POST', '/auth/v1/signup', {
+    email,
+    password,
+    data: { full_name: name || '' },
+  });
+  if (data?.access_token) _persistAuth(data.access_token, data.user?.id || '');
+  return { data, error };
+}
+
+async function supaSignIn(email, password) {
+  const { data, error } = await supaReq('POST', '/auth/v1/token?grant_type=password', { email, password });
+  if (data?.access_token) _persistAuth(data.access_token, data.user?.id || '');
+  return { data, error };
+}
+
+async function supaSignOut() {
+  if (_supaToken) await supaReq('POST', '/auth/v1/logout', {}).catch(() => {});
+  _persistAuth('', '');
+}
+
+async function supaGetUser() {
+  if (!_supaToken) return null;
+  const { data } = await supaReq('GET', '/auth/v1/user', null);
+  return data?.id ? data : null;
+}
+
+// ─── REST client ──────────────────────────────────────────────────────────────
 const supabaseClient = (() => {
   const noop = async () => ({ data: null, error: new Error('Supabase not configured') });
   if (!supabaseEnabled) {
     return { from: () => ({ select: noop, insert: noop, update: noop, delete: noop, upsert: noop }) };
   }
-
-  const baseHeaders = {
-    'Content-Type': 'application/json',
-    'apikey': SUPABASE_ANON_KEY,
-    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-  };
-
   const req = async (method, table, body, qs = '') => {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${qs}`, {
         method,
-        headers: { ...baseHeaders, Prefer: 'return=representation' },
+        headers: { ...supaHeaders(), Prefer: 'return=representation' },
         body: body != null ? JSON.stringify(body) : undefined,
       });
       if (!res.ok) return { data: null, error: new Error(`HTTP ${res.status}`) };
@@ -82,7 +136,6 @@ const supabaseClient = (() => {
       return { data: null, error: err };
     }
   };
-
   return {
     from: (table) => ({
       select: (cols = '*', qs = '') => req('GET', table, null, `?select=${cols}${qs}`),
@@ -94,54 +147,41 @@ const supabaseClient = (() => {
   };
 })();
 
-// ─── Supabase data helpers ─────────────────────────────────────────────────────
+// ─── Data helpers ─────────────────────────────────────────────────────────────
 
 async function saveTransaction(txn) {
   if (!supabaseEnabled) return;
-  const { error } = await supabaseClient.from('transactions').upsert({
-    id: txn.id,
-    date: txn.date,
-    description: txn.description,
-    amount: txn.amount,
-    category: txn.category,
-    account: txn.account,
-    notes: txn.notes || '',
+  await supabaseClient.from('transactions').upsert({
+    id: txn.id, date: txn.date, description: txn.description,
+    amount: txn.amount, category: txn.category, account: txn.account,
+    notes: txn.notes || '', user_id: _supaUserId || undefined,
   });
-  if (error) console.warn('[Supabase] saveTransaction:', error.message);
 }
 
 async function loadTransactions() {
-  if (!supabaseEnabled) return null;
-  const { data, error } = await supabaseClient.from('transactions').select('*', '&order=date.desc');
-  if (error) { console.warn('[Supabase] loadTransactions:', error.message); return null; }
+  if (!supabaseEnabled || !_supaUserId) return null;
+  const { data } = await supabaseClient.from('transactions').select('*', `&order=date.desc&user_id=eq.${_supaUserId}`);
   return data;
 }
 
 async function deleteTransactionRemote(id) {
   if (!supabaseEnabled) return;
-  const { error } = await supabaseClient.from('transactions').delete(`?id=eq.${id}`);
-  if (error) console.warn('[Supabase] deleteTransaction:', error.message);
+  await supabaseClient.from('transactions').delete(`?id=eq.${id}`);
 }
 
 async function saveInvestment(inv) {
   if (!supabaseEnabled) return;
-  const { error } = await supabaseClient.from('investments').upsert({
-    id: inv.id,
-    name: inv.name,
-    type: inv.type,
-    ticker: inv.ticker,
-    invested: inv.invested,
-    current_value: inv.current,
-    return_pct: inv.returnPct,
-    yield_pct: inv.yieldPct,
+  await supabaseClient.from('investments').upsert({
+    id: inv.id, name: inv.name, type: inv.type, ticker: inv.ticker,
+    invested: inv.invested, current_value: inv.current,
+    return_pct: inv.returnPct, yield_pct: inv.yieldPct,
+    user_id: _supaUserId || undefined,
   });
-  if (error) console.warn('[Supabase] saveInvestment:', error.message);
 }
 
 async function loadInvestments() {
-  if (!supabaseEnabled) return null;
-  const { data, error } = await supabaseClient.from('investments').select('*');
-  if (error) { console.warn('[Supabase] loadInvestments:', error.message); return null; }
+  if (!supabaseEnabled || !_supaUserId) return null;
+  const { data } = await supabaseClient.from('investments').select('*', `&user_id=eq.${_supaUserId}`);
   return data ? data.map(r => ({
     id: r.id, name: r.name, type: r.type, ticker: r.ticker,
     invested: r.invested, current: r.current_value,
@@ -151,24 +191,47 @@ async function loadInvestments() {
 
 async function saveBill(bill) {
   if (!supabaseEnabled) return;
-  const { error } = await supabaseClient.from('bills').upsert({
-    id: bill.id,
-    name: bill.name,
-    amount: bill.amount,
-    due_day: bill.dueDay,
-    category: bill.category,
-    status: bill.status,
+  await supabaseClient.from('bills').upsert({
+    id: bill.id, name: bill.name, amount: bill.amount,
+    due_day: bill.dueDay, category: bill.category, status: bill.status,
+    user_id: _supaUserId || undefined,
   });
-  if (error) console.warn('[Supabase] saveBill:', error.message);
 }
 
-async function saveChatMessage(msg, userId) {
+async function loadBills() {
+  if (!supabaseEnabled || !_supaUserId) return null;
+  const { data } = await supabaseClient.from('bills').select('*', `&user_id=eq.${_supaUserId}`);
+  return data ? data.map(r => ({
+    id: r.id, name: r.name, amount: r.amount,
+    dueDay: r.due_day, category: r.category, status: r.status,
+  })) : null;
+}
+
+async function saveGoal(goal) {
   if (!supabaseEnabled) return;
-  const { error } = await supabaseClient.from('chat_messages').insert({
-    id: String(msg.id),
-    role: msg.role,
-    text: msg.text,
-    user_id: userId || 'anonymous',
+  await supabaseClient.from('goals').upsert({
+    id: goal.id, name: goal.name, monthly_target: goal.monthlyTarget,
+    description: goal.description || '', user_id: _supaUserId || undefined,
   });
-  if (error) console.warn('[Supabase] saveChatMessage:', error.message);
+}
+
+async function loadGoals() {
+  if (!supabaseEnabled || !_supaUserId) return null;
+  const { data } = await supabaseClient.from('goals').select('*', `&user_id=eq.${_supaUserId}`);
+  return data ? data.map(r => ({
+    id: r.id, name: r.name, monthlyTarget: r.monthly_target, description: r.description,
+  })) : null;
+}
+
+async function deleteGoalRemote(id) {
+  if (!supabaseEnabled) return;
+  await supabaseClient.from('goals').delete(`?id=eq.${id}`);
+}
+
+async function saveChatMessage(msg) {
+  if (!supabaseEnabled) return;
+  await supabaseClient.from('chat_messages').insert({
+    id: String(msg.id), role: msg.role, text: msg.text,
+    user_id: _supaUserId || undefined,
+  });
 }

@@ -48,10 +48,9 @@ const INITIAL_TRANSACTIONS = [
   { id: 't005', date: '2026-05-05', description: 'Spotify',                     amount:   -21.90, category: 'subscriptions', account: 'credit',     notes: '' },
   { id: 't006', date: '2026-05-04', description: 'Aluguel',                     amount: -2500.00, category: 'housing',       account: 'checking',   notes: '' },
   { id: 't007', date: '2026-05-04', description: 'Academia SmartFit',           amount:   -99.90, category: 'health',        account: 'credit',     notes: '' },
-  { id: 't008', date: '2026-05-03', description: 'Freelance — Projeto App',     amount:  1800.00, category: 'freelance',     account: 'checking',   notes: 'Cliente: Agência X' },
+  { id: 't008', date: '2026-05-03', description: 'Freelance — Projeto App',     amount:  1800.00, category: 'freelance',     account: 'checking',   notes: '' },
   { id: 't009', date: '2026-05-02', description: 'Farmácia',                    amount:   -89.50, category: 'health',        account: 'credit',     notes: '' },
   { id: 't010', date: '2026-05-01', description: 'Internet Vivo',               amount:  -109.90, category: 'utilities',     account: 'checking',   notes: '' },
-
   // April 2026
   { id: 't011', date: '2026-04-05', description: 'Salário — Empresa XYZ',      amount:  8500.00, category: 'salary',        account: 'checking',   notes: '' },
   { id: 't012', date: '2026-04-28', description: 'iFood — Jantar',              amount:   -68.90, category: 'food',          account: 'credit',     notes: '' },
@@ -69,7 +68,6 @@ const INITIAL_TRANSACTIONS = [
   { id: 't024', date: '2026-04-03', description: 'Rendimento CDB',              amount:   142.50, category: 'invest_return', account: 'investment', notes: '' },
   { id: 't025', date: '2026-04-02', description: 'Restaurante Outback',         amount:  -148.00, category: 'food',          account: 'credit',     notes: '' },
   { id: 't026', date: '2026-04-01', description: 'Freelance — Design UI',       amount:  2200.00, category: 'freelance',     account: 'checking',   notes: '' },
-
   // March 2026
   { id: 't027', date: '2026-03-05', description: 'Salário — Empresa XYZ',      amount:  8500.00, category: 'salary',        account: 'checking',   notes: '' },
   { id: 't028', date: '2026-03-30', description: 'Supermercado Extra',          amount:  -267.80, category: 'food',          account: 'credit',     notes: '' },
@@ -87,7 +85,6 @@ const INITIAL_TRANSACTIONS = [
   { id: 't040', date: '2026-03-05', description: 'Academia SmartFit',           amount:   -99.90, category: 'health',        account: 'credit',     notes: '' },
   { id: 't041', date: '2026-03-03', description: 'Rendimento CDB',              amount:   138.20, category: 'invest_return', account: 'investment', notes: '' },
   { id: 't042', date: '2026-03-01', description: 'Freelance — Landing Page',    amount:  1500.00, category: 'freelance',     account: 'checking',   notes: '' },
-
   // February 2026
   { id: 't043', date: '2026-02-05', description: 'Salário — Empresa XYZ',      amount:  8500.00, category: 'salary',        account: 'checking',   notes: '' },
   { id: 't044', date: '2026-02-25', description: 'Seguro Saúde',                amount:  -450.00, category: 'health',        account: 'checking',   notes: '' },
@@ -98,7 +95,6 @@ const INITIAL_TRANSACTIONS = [
   { id: 't049', date: '2026-02-10', description: 'Internet Vivo',               amount:  -109.90, category: 'utilities',     account: 'checking',   notes: '' },
   { id: 't050', date: '2026-02-05', description: 'Aluguel',                     amount: -2500.00, category: 'housing',       account: 'checking',   notes: '' },
   { id: 't051', date: '2026-02-03', description: 'Rendimento CDB',              amount:   135.70, category: 'invest_return', account: 'investment', notes: '' },
-
   // January 2026
   { id: 't052', date: '2026-01-05', description: 'Salário — Empresa XYZ',      amount:  8500.00, category: 'salary',        account: 'checking',   notes: '' },
   { id: 't053', date: '2026-01-20', description: 'Supermercado',                amount:  -245.90, category: 'food',          account: 'credit',     notes: '' },
@@ -130,7 +126,10 @@ const INITIAL_BILLS = [
   { id: 'b08', name: 'PlayStation Plus', amount:   39.90, dueDay: 18, category: 'subscriptions', status: 'overdue' },
 ];
 
-// ─── Monthly chart data (last 6 months) ──────────────────────────────────────
+const INITIAL_GOALS = [
+  { id: 'g001', name: 'Reserva de Emergência', monthlyTarget: 1000, description: 'Guardar pelo menos R$ 1.000 por mês' },
+];
+
 const MONTHLY_DATA = [
   { month: 'Dez', income: 8500,  expense: 5120 },
   { month: 'Jan', income: 8641,  expense: 5551 },
@@ -140,60 +139,185 @@ const MONTHLY_DATA = [
   { month: 'Mai', income: 10300, expense: 3193 },
 ];
 
-// ─── Context ──────────────────────────────────────────────────────────────────
-const AppContext = React.createContext(null);
+// ─── Smart notification generator ────────────────────────────────────────────
+function generateAlerts(transactions, bills, goals, income, expenses) {
+  const alerts = [];
+  const today     = new Date();
+  const dayOfMonth = today.getDate();
+  const currentMonth = today.toISOString().slice(0, 7);
 
-function useApp() {
-  return React.useContext(AppContext);
+  const thisMonthTxns = transactions.filter(t => t.date.startsWith(currentMonth));
+  const thisMonthExp  = Math.abs(thisMonthTxns.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0));
+
+  // Yesterday's spending
+  const yday = new Date(today); yday.setDate(yday.getDate() - 1);
+  const ydayStr = yday.toISOString().slice(0, 10);
+  const ydayExp = Math.abs(transactions.filter(t => t.date === ydayStr && t.amount < 0).reduce((s, t) => s + t.amount, 0));
+  if (ydayExp > 200) {
+    alerts.push({ id: 'yesterday', type: 'info', emoji: '📅',
+      title: 'Gastos de ontem',
+      msg: `Ontem você gastou ${fmt.brl(ydayExp)}. Fique de olho no orçamento!` });
+  }
+
+  // High spending rate
+  if (income > 0 && thisMonthExp / income > 0.65) {
+    alerts.push({ id: 'high-spend', type: 'warning', emoji: '⚠️',
+      title: 'Você está gastando muito',
+      msg: `Seus gastos este mês (${fmt.brl(thisMonthExp)}) representam ${Math.round(thisMonthExp / income * 100)}% da sua renda.` });
+  }
+
+  // Goals at risk
+  goals.forEach(goal => {
+    const projectedSavings = income - thisMonthExp;
+    if (income > 0 && projectedSavings < goal.monthlyTarget) {
+      alerts.push({ id: `goal-${goal.id}`, type: 'error', emoji: '🎯',
+        title: 'Meta em risco',
+        msg: `Cuidado! Ao ritmo atual você vai guardar ${fmt.brl(Math.max(0, projectedSavings))}, abaixo da meta "${goal.name}" de ${fmt.brl(goal.monthlyTarget)}.` });
+    } else if (income > 0 && projectedSavings < goal.monthlyTarget * 1.2) {
+      alerts.push({ id: `goal-warn-${goal.id}`, type: 'warning', emoji: '💰',
+        title: 'Perto do limite da meta',
+        msg: `Seus gastos estão próximos de impedir sua meta "${goal.name}". Você guardará aprox. ${fmt.brl(projectedSavings)}.` });
+    }
+  });
+
+  // Category spike
+  const byCat = {};
+  thisMonthTxns.filter(t => t.amount < 0).forEach(t => {
+    byCat[t.category] = (byCat[t.category] || 0) + Math.abs(t.amount);
+  });
+  const catArr = Object.entries(byCat).sort(([,a],[,b]) => b - a);
+  if (catArr.length > 0 && income > 0) {
+    const [topCat, topVal] = catArr[0];
+    if (topCat !== 'housing' && topVal / income > 0.15) {
+      alerts.push({ id: `cat-${topCat}`, type: 'info', emoji: '📊',
+        title: `${CATEGORIES[topCat]?.label || topCat} consumindo muito`,
+        msg: `Sua categoria ${CATEGORIES[topCat]?.label || topCat} representa ${Math.round(topVal/income*100)}% da renda — ${fmt.brl(topVal)} este mês.` });
+    }
+  }
+
+  // Bills due soon (within 4 days)
+  bills.filter(b => b.status === 'pending' || b.status === 'overdue').forEach(b => {
+    const daysUntil = b.dueDay - dayOfMonth;
+    if (b.status === 'overdue') {
+      alerts.push({ id: `bill-ov-${b.id}`, type: 'error', emoji: '🚨',
+        title: `${b.name} está vencida!`,
+        msg: `Conta de ${fmt.brl(b.amount)} está em atraso. Regularize o quanto antes.` });
+    } else if (daysUntil >= 0 && daysUntil <= 4) {
+      alerts.push({ id: `bill-${b.id}`, type: 'warning', emoji: '📆',
+        title: `${b.name} vence em ${daysUntil === 0 ? 'hoje' : daysUntil + ' dia(s)'}`,
+        msg: `Valor: ${fmt.brl(b.amount)}. Não esqueça de pagar!` });
+    }
+  });
+
+  return alerts;
 }
 
+// ─── Context ──────────────────────────────────────────────────────────────────
+const AppContext = React.createContext(null);
+function useApp() { return React.useContext(AppContext); }
+
 function AppProvider({ children }) {
-  const [authed, setAuthed] = React.useState(false);
-  const [theme, setThemeState] = React.useState(() => localStorage.getItem('zf-theme') || 'light');
+  const [authed,       setAuthed]       = React.useState(false);
+  const [authLoading,  setAuthLoading]  = React.useState(true); // checks session on mount
+  const [theme,        setThemeState]   = React.useState(() => localStorage.getItem('zf-theme') || 'light');
   const [transactions, setTransactions] = React.useState(INITIAL_TRANSACTIONS);
-  const [investments] = React.useState(INITIAL_INVESTMENTS);
-  const [bills, setBills] = React.useState(INITIAL_BILLS);
-  const [user, setUser] = React.useState({ name: 'Guilherme', email: 'guilherme@zackfinance.com', initials: 'GF' });
+  const [investments,  setInvestments]  = React.useState(INITIAL_INVESTMENTS);
+  const [bills,        setBills]        = React.useState(INITIAL_BILLS);
+  const [goals,        setGoals]        = React.useState(
+    JSON.parse(localStorage.getItem('zf-goals') || 'null') || INITIAL_GOALS
+  );
+  const [user,  setUser]  = React.useState({ name: 'Usuário', email: '', initials: 'ZF' });
   const [toasts, setToasts] = React.useState([]);
+
+  // Persist goals locally
+  React.useEffect(() => {
+    localStorage.setItem('zf-goals', JSON.stringify(goals));
+  }, [goals]);
 
   React.useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('zf-theme', theme);
   }, [theme]);
 
-  // ── Supabase background sync on auth ──────────────────────────────────────
+  // Check existing Supabase session on mount
   React.useEffect(() => {
-    if (!authed || typeof supabaseEnabled === 'undefined' || !supabaseEnabled) return;
-    // Try to load transactions from Supabase; fall back to local data silently
-    loadTransactions().then(remote => {
-      if (remote && remote.length > 0) {
-        setTransactions(remote);
+    if (!supabaseEnabled) { setAuthLoading(false); return; }
+    supaGetUser().then(u => {
+      if (u) {
+        const nm = u.user_metadata?.full_name || u.email?.split('@')[0] || 'Usuário';
+        setUser({ name: nm, email: u.email, initials: nm.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() });
+        setAuthed(true);
+        _syncFromSupabase(setTransactions, setInvestments, setBills, setGoals);
       }
-    }).catch(() => {});
-  }, [authed]);
+      setAuthLoading(false);
+    });
+  }, []);
 
   const toggleTheme = () => setThemeState(t => t === 'light' ? 'dark' : 'light');
 
   const addToast = React.useCallback((msg, type = 'success') => {
     const id = Date.now();
     setToasts(ts => [...ts, { id, msg, type }]);
-    setTimeout(() => setToasts(ts => ts.filter(t => t.id !== id)), 3500);
+    setTimeout(() => setToasts(ts => ts.filter(t => t.id !== id)), 4000);
   }, []);
 
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  const login = async (email, password, name) => {
+    if (supabaseEnabled) {
+      const { data, error } = await supaSignIn(email, password);
+      if (error) return { error: error.error_description || error.msg || 'E-mail ou senha incorretos.' };
+      const nm = data.user?.user_metadata?.full_name || name || email.split('@')[0];
+      setUser({ name: nm, email, initials: nm.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() });
+      setAuthed(true);
+      _syncFromSupabase(setTransactions, setInvestments, setBills, setGoals);
+      return { error: null };
+    }
+    // Demo mode — accept any valid email+password
+    const nm = name || email.split('@')[0];
+    setUser({ name: nm, email, initials: nm.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() });
+    setAuthed(true);
+    return { error: null };
+  };
+
+  const register = async (email, password, name) => {
+    if (supabaseEnabled) {
+      const { data, error } = await supaSignUp(email, password, name);
+      if (error) return { error: error.msg || error.message || 'Erro ao criar conta.' };
+      if (data?.access_token) {
+        setUser({ name, email, initials: name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() });
+        setAuthed(true);
+      } else {
+        return { error: null, confirmEmail: true };
+      }
+      return { error: null };
+    }
+    // Demo mode
+    setUser({ name, email, initials: name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() });
+    setAuthed(true);
+    return { error: null };
+  };
+
+  const logout = async () => {
+    if (supabaseEnabled) await supaSignOut();
+    setAuthed(false);
+    setTransactions(INITIAL_TRANSACTIONS);
+    setInvestments(INITIAL_INVESTMENTS);
+    setBills(INITIAL_BILLS);
+    setGoals(INITIAL_GOALS);
+  };
+
+  // ── Transactions ──────────────────────────────────────────────────────────
   const addTransaction = txn => {
     const newTxn = { id: 't' + Date.now(), ...txn };
     setTransactions(ts => [newTxn, ...ts]);
     addToast('Transação adicionada!');
-    // Background sync to Supabase
-    if (typeof saveTransaction !== 'undefined') {
-      saveTransaction(newTxn).catch(() => {});
-    }
+    if (supabaseEnabled) saveTransaction(newTxn).catch(() => {});
   };
 
   const editTransaction = (id, updates) => {
     setTransactions(ts => ts.map(t => t.id === id ? { ...t, ...updates } : t));
     addToast('Transação atualizada!');
-    if (typeof saveTransaction !== 'undefined') {
+    if (supabaseEnabled) {
       const updated = transactions.find(t => t.id === id);
       if (updated) saveTransaction({ ...updated, ...updates }).catch(() => {});
     }
@@ -202,28 +326,50 @@ function AppProvider({ children }) {
   const deleteTransaction = id => {
     setTransactions(ts => ts.filter(t => t.id !== id));
     addToast('Transação removida.', 'error');
-    if (typeof deleteTransactionRemote !== 'undefined') {
-      deleteTransactionRemote(id).catch(() => {});
-    }
+    if (supabaseEnabled) deleteTransactionRemote(id).catch(() => {});
   };
 
+  // ── Bills ─────────────────────────────────────────────────────────────────
   const updateBill = (id, updates) => {
     setBills(bs => bs.map(b => b.id === id ? { ...b, ...updates } : b));
-    if (typeof saveBill !== 'undefined') {
+    if (supabaseEnabled) {
       const updated = bills.find(b => b.id === id);
       if (updated) saveBill({ ...updated, ...updates }).catch(() => {});
     }
   };
 
-  const login = (name, email) => {
-    if (name) setUser({ name, email, initials: name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() });
-    setAuthed(true);
+  const addBill = bill => {
+    setBills(bs => [...bs, bill]);
+    if (supabaseEnabled) saveBill(bill).catch(() => {});
   };
-  const logout = () => setAuthed(false);
 
-  // Derived stats (current month = May 2026)
-  const thisMonthTxns = transactions.filter(t => t.date.startsWith('2026-05'));
-  const income  = thisMonthTxns.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+  // ── Goals ─────────────────────────────────────────────────────────────────
+  const addGoal = goal => {
+    const g = { id: 'g' + Date.now(), ...goal };
+    setGoals(gs => [...gs, g]);
+    addToast('Meta criada!');
+    if (supabaseEnabled) saveGoal(g).catch(() => {});
+  };
+
+  const editGoal = (id, updates) => {
+    setGoals(gs => gs.map(g => g.id === id ? { ...g, ...updates } : g));
+    addToast('Meta atualizada!');
+    if (supabaseEnabled) {
+      const updated = goals.find(g => g.id === id);
+      if (updated) saveGoal({ ...updated, ...updates }).catch(() => {});
+    }
+  };
+
+  const deleteGoal = id => {
+    setGoals(gs => gs.filter(g => g.id !== id));
+    addToast('Meta removida.', 'error');
+    if (supabaseEnabled) deleteGoalRemote(id).catch(() => {});
+  };
+
+  // ── Derived stats ─────────────────────────────────────────────────────────
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const thisMonthTxns = transactions.filter(t => t.date.startsWith(currentMonth));
+  const income   = thisMonthTxns.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
   const expenses = Math.abs(thisMonthTxns.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0));
   const balance  = 24580.40;
   const savingsRate = income > 0 ? Math.round((income - expenses) / income * 100) : 0;
@@ -235,18 +381,38 @@ function AppProvider({ children }) {
     { month: 'Mai', income, expense: expenses },
   ];
 
+  const alerts = React.useMemo(
+    () => generateAlerts(transactions, bills, goals, income, expenses),
+    [transactions, bills, goals, income, expenses]
+  );
+
   return (
     <AppContext.Provider value={{
-      authed, login, logout,
+      authed, authLoading, login, register, logout,
       theme, toggleTheme,
       user, toasts, addToast,
       transactions, addTransaction, editTransaction, deleteTransaction,
-      investments, bills, updateBill,
+      investments, bills, updateBill, addBill,
+      goals, addGoal, editGoal, deleteGoal,
       balance, income, expenses, savingsRate, totalInvested, totalReturn,
-      monthlyData,
-      supabaseActive: typeof supabaseEnabled !== 'undefined' && supabaseEnabled,
+      monthlyData, alerts,
+      supabaseActive: supabaseEnabled,
+      currentMonth,
     }}>
       {children}
     </AppContext.Provider>
   );
+}
+
+// ─── Background Supabase sync ─────────────────────────────────────────────────
+async function _syncFromSupabase(setTransactions, setInvestments, setBills, setGoals) {
+  try {
+    const [txns, invs, bls, gls] = await Promise.all([
+      loadTransactions(), loadInvestments(), loadBills(), loadGoals(),
+    ]);
+    if (txns && txns.length > 0) setTransactions(txns);
+    if (invs && invs.length > 0) setInvestments(invs);
+    if (bls  && bls.length  > 0) setBills(bls);
+    if (gls  && gls.length  > 0) setGoals(gls);
+  } catch (_) {}
 }
