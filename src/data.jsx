@@ -161,6 +161,17 @@ function AppProvider({ children }) {
     localStorage.setItem('zf-theme', theme);
   }, [theme]);
 
+  // ── Supabase background sync on auth ──────────────────────────────────────
+  React.useEffect(() => {
+    if (!authed || typeof supabaseEnabled === 'undefined' || !supabaseEnabled) return;
+    // Try to load transactions from Supabase; fall back to local data silently
+    loadTransactions().then(remote => {
+      if (remote && remote.length > 0) {
+        setTransactions(remote);
+      }
+    }).catch(() => {});
+  }, [authed]);
+
   const toggleTheme = () => setThemeState(t => t === 'light' ? 'dark' : 'light');
 
   const addToast = React.useCallback((msg, type = 'success') => {
@@ -170,22 +181,38 @@ function AppProvider({ children }) {
   }, []);
 
   const addTransaction = txn => {
-    setTransactions(ts => [{ id: 't' + Date.now(), ...txn }, ...ts]);
+    const newTxn = { id: 't' + Date.now(), ...txn };
+    setTransactions(ts => [newTxn, ...ts]);
     addToast('Transação adicionada!');
+    // Background sync to Supabase
+    if (typeof saveTransaction !== 'undefined') {
+      saveTransaction(newTxn).catch(() => {});
+    }
   };
 
   const editTransaction = (id, updates) => {
     setTransactions(ts => ts.map(t => t.id === id ? { ...t, ...updates } : t));
     addToast('Transação atualizada!');
+    if (typeof saveTransaction !== 'undefined') {
+      const updated = transactions.find(t => t.id === id);
+      if (updated) saveTransaction({ ...updated, ...updates }).catch(() => {});
+    }
   };
 
   const deleteTransaction = id => {
     setTransactions(ts => ts.filter(t => t.id !== id));
     addToast('Transação removida.', 'error');
+    if (typeof deleteTransactionRemote !== 'undefined') {
+      deleteTransactionRemote(id).catch(() => {});
+    }
   };
 
   const updateBill = (id, updates) => {
     setBills(bs => bs.map(b => b.id === id ? { ...b, ...updates } : b));
+    if (typeof saveBill !== 'undefined') {
+      const updated = bills.find(b => b.id === id);
+      if (updated) saveBill({ ...updated, ...updates }).catch(() => {});
+    }
   };
 
   const login = (name, email) => {
@@ -217,6 +244,7 @@ function AppProvider({ children }) {
       investments, bills, updateBill,
       balance, income, expenses, savingsRate, totalInvested, totalReturn,
       monthlyData,
+      supabaseActive: typeof supabaseEnabled !== 'undefined' && supabaseEnabled,
     }}>
       {children}
     </AppContext.Provider>
