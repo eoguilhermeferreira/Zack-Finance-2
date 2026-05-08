@@ -25,9 +25,12 @@ function AuthPage() {
     <div className="auth-shell">
       {/* Art side */}
       <div className="auth-art">
+        {/* Brand logo */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 48 }}>
-            <div className="brand-mark"><IcoWallet size={20} style={{ color: '#fff' }}/></div>
+            <div className="brand-mark" style={{ width: 40, height: 40, borderRadius: 12, overflow: 'hidden', background: 'linear-gradient(135deg,#1565E0,#0B3FA8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ZackAvatar size={40} style={{ borderRadius: 12 }}/>
+            </div>
             <span style={{ fontFamily: 'Sora', fontWeight: 700, fontSize: 18, color: '#fff' }}>Zack Finance</span>
           </div>
           <h1 style={{ fontSize: 36, fontWeight: 800, color: '#fff', lineHeight: 1.2, maxWidth: 400 }}>
@@ -39,8 +42,18 @@ function AuthPage() {
           </p>
         </div>
 
+        {/* Floating mockup cards */}
+        <div className="mockup-cards-area">
+          <div className="mockup-card">
+            <DashboardMockupCard/>
+          </div>
+          <div className="mockup-card-secondary">
+            <InvestmentMockupCard/>
+          </div>
+        </div>
+
         {/* Feature chips */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'relative', zIndex: 3 }}>
           {[
             ['Transações automatizadas', '✓'],
             ['Carteira de investimentos', '✓'],
