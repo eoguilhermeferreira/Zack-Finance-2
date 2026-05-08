@@ -48,10 +48,10 @@ function TransactionsPage() {
           <h1>Transações</h1>
           <p className="sub">{fmt.num(filtered.length)} registro{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-sm"><IcoUpload size={14}/>Importar</button>
-          <button className="btn btn-sm"><IcoDownload size={14}/>Exportar</button>
-          <button className="btn btn-primary btn-sm" onClick={() => setShowAdd(true)}><IcoPlus size={15}/>Nova transação</button>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button className="btn btn-sm mobile-hide"><IcoUpload size={14}/>Importar</button>
+          <button className="btn btn-sm mobile-hide"><IcoDownload size={14}/>Exportar</button>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowAdd(true)}><IcoPlus size={15}/>Nova</button>
         </div>
       </div>
 
@@ -75,7 +75,7 @@ function TransactionsPage() {
 
       {/* Filters */}
       <div className="card" style={{ padding: 14, marginBottom: 16 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="filter-row">
           <div className="search" style={{ maxWidth: '100%', flex: 'unset' }}>
             <IcoSearch size={16}/>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar transação..."/>
@@ -117,10 +117,10 @@ function TransactionsPage() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Data</th>
+                    <th className="mobile-hide">Data</th>
                     <th>Descrição</th>
-                    <th>Categoria</th>
-                    <th>Conta</th>
+                    <th className="mobile-hide">Categoria</th>
+                    <th className="mobile-hide">Conta</th>
                     <th style={{ textAlign: 'right' }}>Valor</th>
                     <th style={{ width: 80 }}></th>
                   </tr>
@@ -128,13 +128,13 @@ function TransactionsPage() {
                 <tbody>
                   {paginated.map(t => (
                     <tr key={t.id}>
-                      <td style={{ color: 'var(--text-2)', whiteSpace: 'nowrap', fontSize: 13 }}>{fmt.date(t.date)}</td>
+                      <td className="mobile-hide" style={{ color: 'var(--text-2)', whiteSpace: 'nowrap', fontSize: 13 }}>{fmt.date(t.date)}</td>
                       <td>
                         <div style={{ fontWeight: 500 }}>{t.description}</div>
-                        {t.notes && <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{t.notes}</div>}
+                        <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{fmt.dateShort(t.date)}<span className="mobile-hide"> · {ACCOUNTS.find(a => a.id === t.account)?.label}</span></div>
                       </td>
-                      <td><CatPill category={t.category}/></td>
-                      <td style={{ color: 'var(--text-2)', fontSize: 13 }}>{ACCOUNTS.find(a => a.id === t.account)?.label}</td>
+                      <td className="mobile-hide"><CatPill category={t.category}/></td>
+                      <td className="mobile-hide" style={{ color: 'var(--text-2)', fontSize: 13 }}>{ACCOUNTS.find(a => a.id === t.account)?.label}</td>
                       <td style={{ textAlign: 'right' }}><AmountDisplay amount={t.amount}/></td>
                       <td>
                         <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>

@@ -85,19 +85,19 @@ function BillsPage() {
       </div>
 
       {/* Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
+      <div className="grid-3" style={{ marginBottom: 20 }}>
         {[
-          { label: 'Total Mensal', value: fmt.brl(totalMonthly), color: 'var(--text)', bg: 'var(--bg-2)', iconBg: 'var(--bg-2)', icon: <IcoReceipt size={18} style={{ color: 'var(--brand-blue)' }}/> },
-          { label: 'Já Pago',     value: fmt.brl(totalPaid),    color: 'var(--brand-green)', bg: '#dcfce7', iconBg: '#dcfce7', icon: <IcoCheck size={18} style={{ color: 'var(--brand-green)' }}/> },
-          { label: 'A Pagar',     value: fmt.brl(totalPending), color: 'var(--brand-red)',   bg: '#fee2e2', iconBg: '#fee2e2', icon: <IcoAlertCircle size={18} style={{ color: 'var(--brand-red)' }}/> },
+          { label: 'Total Mensal', value: fmt.brl(totalMonthly), color: 'var(--text)',          iconBg: 'var(--bg-2)', icon: <IcoReceipt size={18} style={{ color: 'var(--brand-blue)' }}/> },
+          { label: 'Já Pago',     value: fmt.brl(totalPaid),    color: 'var(--brand-green)',    iconBg: '#dcfce7',     icon: <IcoCheck size={18} style={{ color: 'var(--brand-green)' }}/> },
+          { label: 'A Pagar',     value: fmt.brl(totalPending), color: 'var(--brand-red)',      iconBg: '#fee2e2',     icon: <IcoAlertCircle size={18} style={{ color: 'var(--brand-red)' }}/> },
         ].map(s => (
-          <div key={s.label} className="card" style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-              {s.icon}
-            </div>
-            <div>
-              <div style={{ fontSize: 12.5, color: 'var(--text-3)', fontWeight: 600, letterSpacing: '.02em', textTransform: 'uppercase', marginBottom: 4 }}>{s.label}</div>
-              <div className="tabular" style={{ fontFamily: 'Sora', fontSize: 22, fontWeight: 700, color: s.color }}>{s.value}</div>
+          <div key={s.label} className="card" style={{ padding: '16px' }}>
+            <div className="sc-row">
+              <div className="sc-icon" style={{ background: s.iconBg }}>{s.icon}</div>
+              <div className="sc-body">
+                <div className="sc-label">{s.label}</div>
+                <div className="sc-value tabular" style={{ color: s.color }}>{s.value}</div>
+              </div>
             </div>
           </div>
         ))}

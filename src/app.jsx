@@ -308,17 +308,16 @@ function AppShell() {
           </div>
         </header>
 
-        <div style={{ flex: 1, overflow: 'auto', overflowX: 'hidden' }}>
+        <div style={{ flex: 1, overflow: 'auto', overflowX: 'hidden', position: 'relative' }}>
           {currentPage()}
+          {/* FAB inside scroll container so modals (z-index:200) render above it (z-index:70) */}
+          {page !== 'zack' && (
+            <button className="zack-fab" onClick={() => navigate('zack', null)} title="Abrir Zack AI">
+              <ZackAvatar size={44} style={{ borderRadius: '50%' }}/>
+            </button>
+          )}
         </div>
       </div>
-
-      {/* Zack FAB */}
-      {page !== 'zack' && (
-        <button className="zack-fab" onClick={() => navigate('zack', null)} title="Abrir Zack AI">
-          <ZackAvatar size={44} style={{ borderRadius: '50%' }}/>
-        </button>
-      )}
 
       <ToastHost/>
     </div>

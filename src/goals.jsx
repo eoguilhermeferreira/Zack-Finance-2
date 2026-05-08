@@ -79,15 +79,13 @@ function GoalsPage() {
             iconBg: '#ede9fe',
           },
         ].map(s => (
-          <div key={s.label} className="card" style={{ padding: '18px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: s.iconBg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-              {s.icon}
-            </div>
-            <div>
-              <div style={{ fontSize: 11.5, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.03em', marginBottom: 4 }}>
-                {s.label}
+          <div key={s.label} className="card" style={{ padding: '16px' }}>
+            <div className="sc-row">
+              <div className="sc-icon" style={{ background: s.iconBg }}>{s.icon}</div>
+              <div className="sc-body">
+                <div className="sc-label">{s.label}</div>
+                <div className="sc-value tabular">{s.value}</div>
               </div>
-              <div className="tabular" style={{ fontFamily: 'Sora', fontSize: 20, fontWeight: 700 }}>{s.value}</div>
             </div>
           </div>
         ))}
