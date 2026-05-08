@@ -1,82 +1,86 @@
 // ─── Dashboard Mockup Card ────────────────────────────────────────────────────
 function DashboardMockupCard() {
   const bars = [
-    { h: 55, color: '#1565E0', label: 'D' },
-    { h: 70, color: '#1565E0', label: 'J' },
-    { h: 65, color: '#1565E0', label: 'F' },
-    { h: 80, color: '#1565E0', label: 'M' },
-    { h: 85, color: '#1565E0', label: 'A' },
-    { h: 75, color: '#2DB36A', label: 'M' },
+    { h: 55, color: '#1565E0' },
+    { h: 70, color: '#1565E0' },
+    { h: 60, color: '#1565E0' },
+    { h: 80, color: '#1565E0' },
+    { h: 75, color: '#1565E0' },
+    { h: 90, color: '#22c55e' },
   ];
-
+  const txns = [
+    { icon: '💼', label: 'Salário', val: '+R$ 8.500', c: '#22c55e' },
+    { icon: '🛒', label: 'Mercado', val: '-R$ 287', c: '#ef4444' },
+    { icon: '🏠', label: 'Aluguel', val: '-R$ 2.500', c: '#ef4444' },
+  ];
   return (
     <div style={{
-      width: 210,
-      background: '#0E1726',
-      borderRadius: 16,
-      padding: '14px',
-      boxShadow: '0 20px 60px rgba(0,0,0,.5)',
+      width: 210, background: '#0E1726',
+      borderRadius: 14, padding: '14px 14px 12px',
+      boxShadow: '0 20px 60px rgba(0,0,0,.55)',
       border: '1px solid rgba(255,255,255,.08)',
       backdropFilter: 'blur(12px)',
       WebkitBackdropFilter: 'blur(12px)',
     }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <span style={{ fontSize: 9, fontWeight: 700, color: '#A6B0C5', textTransform: 'uppercase', letterSpacing: '.08em' }}>Dashboard</span>
-        <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'linear-gradient(135deg, #FFB37A, #E5484D)' }}/>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <span style={{ color: '#a6b0c5', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em' }}>Dashboard</span>
+        <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'linear-gradient(135deg,#FFB37A,#E5484D)', display: 'grid', placeItems: 'center' }}>
+          <span style={{ fontSize: 8, color: '#fff', fontWeight: 700 }}>G</span>
+        </div>
       </div>
 
       {/* Balance card */}
       <div style={{
-        background: 'linear-gradient(135deg, #1565E0, #0B3FA8)',
-        borderRadius: 10,
-        padding: '10px 12px',
-        marginBottom: 8,
+        background: 'linear-gradient(135deg,#1565E0,#0B3FA8)',
+        borderRadius: 10, padding: '10px 12px', marginBottom: 8,
       }}>
-        <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,.6)', marginBottom: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Saldo Total</div>
-        <div style={{ fontSize: 17, fontWeight: 800, color: '#fff', fontFamily: 'Sora, sans-serif', letterSpacing: '-.02em' }}>R$ 24.580</div>
-        <div style={{ fontSize: 7, color: 'rgba(255,255,255,.5)', marginTop: 2 }}>+R$ 7.107 este mês</div>
+        <div style={{ fontSize: 8, color: 'rgba(255,255,255,.65)', marginBottom: 3, fontWeight: 600 }}>SALDO TOTAL</div>
+        <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-.02em', fontFamily: 'Sora,Inter,sans-serif' }}>R$ 24.580</div>
+        <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,.5)', marginTop: 2 }}>Atualizado agora</div>
       </div>
 
-      {/* Income / Expenses row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
-        <div style={{ background: 'rgba(45,179,106,.12)', border: '1px solid rgba(45,179,106,.2)', borderRadius: 8, padding: '7px 8px' }}>
-          <div style={{ fontSize: 7, color: '#2DB36A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 2 }}>Receitas</div>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: '#2DB36A' }}>R$ 10.300</div>
+      {/* Income / Expenses grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
+        <div style={{ background: 'rgba(34,197,94,.1)', borderRadius: 8, padding: '7px 8px', border: '1px solid rgba(34,197,94,.2)' }}>
+          <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,.5)', marginBottom: 2, fontWeight: 600 }}>RECEITAS</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#22c55e' }}>R$ 10.300</div>
         </div>
-        <div style={{ background: 'rgba(229,72,77,.12)', border: '1px solid rgba(229,72,77,.2)', borderRadius: 8, padding: '7px 8px' }}>
-          <div style={{ fontSize: 7, color: '#E5484D', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 2 }}>Despesas</div>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: '#E5484D' }}>R$ 3.193</div>
+        <div style={{ background: 'rgba(239,68,68,.1)', borderRadius: 8, padding: '7px 8px', border: '1px solid rgba(239,68,68,.2)' }}>
+          <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,.5)', marginBottom: 2, fontWeight: 600 }}>DESPESAS</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#ef4444' }}>R$ 3.193</div>
         </div>
       </div>
 
-      {/* Bar chart */}
-      <div style={{ marginBottom: 8 }}>
-        <div style={{ fontSize: 7.5, color: '#6F7A93', fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.05em' }}>Últimos 6 meses</div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 44 }}>
+      {/* Mini bar chart */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ fontSize: 8, color: 'rgba(255,255,255,.4)', marginBottom: 5, fontWeight: 600 }}>ÚLTIMOS 6 MESES</div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 46 }}>
           {bars.map((b, i) => (
-            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <div style={{ width: '100%', height: b.h * 0.44, background: b.color, borderRadius: '3px 3px 0 0', opacity: i === bars.length - 1 ? 1 : 0.55 }}/>
-              <span style={{ fontSize: 6, color: '#6F7A93' }}>{b.label}</span>
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
+              <div style={{
+                width: '100%', height: `${b.h}%`,
+                background: b.color === '#22c55e'
+                  ? 'linear-gradient(180deg,#22c55e,#15803d)'
+                  : 'linear-gradient(180deg,#1565E0,#0B3FA8)',
+                borderRadius: '3px 3px 1px 1px',
+                opacity: i === bars.length - 1 ? 1 : 0.6,
+              }}/>
             </div>
           ))}
         </div>
       </div>
 
       {/* Recent transactions */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 8 }}>
-        <div style={{ fontSize: 7.5, color: '#6F7A93', fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.05em' }}>Recentes</div>
-        {[
-          { desc: 'Salário XYZ', cat: '#2DB36A', amount: '+R$ 8.500' },
-          { desc: 'Mercado Extra', cat: '#F2A03D', amount: '-R$ 287' },
-          { desc: 'Netflix', cat: '#E5484D', amount: '-R$ 56' },
-        ].map((t, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', borderBottom: i < 2 ? '1px solid rgba(255,255,255,.04)' : 'none' }}>
+      <div style={{ fontSize: 8, color: 'rgba(255,255,255,.4)', marginBottom: 5, fontWeight: 600 }}>RECENTES</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        {txns.map((t, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: t.cat, flexShrink: 0 }}/>
-              <span style={{ fontSize: 7.5, color: '#A6B0C5', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.desc}</span>
+              <span style={{ fontSize: 9 }}>{t.icon}</span>
+              <span style={{ fontSize: 8.5, color: 'rgba(255,255,255,.65)', fontWeight: 500 }}>{t.label}</span>
             </div>
-            <span style={{ fontSize: 8, fontWeight: 700, color: t.amount.startsWith('+') ? '#2DB36A' : '#E5484D' }}>{t.amount}</span>
+            <span style={{ fontSize: 8.5, fontWeight: 700, color: t.c }}>{t.val}</span>
           </div>
         ))}
       </div>
@@ -84,81 +88,98 @@ function DashboardMockupCard() {
   );
 }
 
-// ─── Investment Mockup Card ───────────────────────────────────────────────────
+// ─── Investment Mockup Card ────────────────────────────────────────────────────
 function InvestmentMockupCard() {
   const assets = [
-    { name: 'Tesouro Selic', pct: '+8,31%', color: '#1565E0', barW: 78 },
-    { name: 'IVVB11',        pct: '+12,31%', color: '#7C5CE0', barW: 52 },
-    { name: 'Bitcoin',       pct: '+28,50%', color: '#F2A03D', barW: 36 },
+    { label: 'Tesouro Selic', type: 'Renda Fixa', val: 'R$ 16.245', pct: '+8,3%', c: '#22c55e', dot: '#1565E0' },
+    { label: 'IVVB11',        type: 'ETF',         val: 'R$ 7.637',  pct: '+12,3%', c: '#22c55e', dot: '#7C5CE0' },
+    { label: 'Bitcoin',       type: 'Cripto',      val: 'R$ 2.698',  pct: '+28,5%', c: '#22c55e', dot: '#F2A03D' },
+  ];
+
+  // Donut ring using CSS box-shadow trick
+  const donutSegments = [
+    { color: '#1565E0', pct: 61 },
+    { color: '#7C5CE0', pct: 17 },
+    { color: '#22c55e', pct: 16 },
+    { color: '#F2A03D', pct: 6  },
   ];
 
   return (
     <div style={{
-      width: 190,
-      background: 'rgba(14,23,38,.85)',
-      borderRadius: 16,
-      padding: '14px',
-      boxShadow: '0 16px 50px rgba(0,0,0,.45)',
-      border: '1px solid rgba(255,255,255,.1)',
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
+      width: 200, background: '#0E1726',
+      borderRadius: 14, padding: '14px 14px 12px',
+      boxShadow: '0 20px 60px rgba(0,0,0,.45)',
+      border: '1px solid rgba(255,255,255,.08)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
     }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <span style={{ fontSize: 9, fontWeight: 700, color: '#A6B0C5', textTransform: 'uppercase', letterSpacing: '.08em' }}>Investimentos</span>
-        <span style={{ fontSize: 7, color: '#2DB36A', fontWeight: 700, background: 'rgba(45,179,106,.15)', padding: '2px 5px', borderRadius: 999 }}>+9,4%</span>
+        <span style={{ color: '#a6b0c5', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em' }}>Investimentos</span>
+        <span style={{ fontSize: 8.5, color: '#22c55e', fontWeight: 700 }}>▲ +9,1%</span>
       </div>
 
-      {/* Donut ring + total */}
+      {/* Total patrimônio */}
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 8, color: 'rgba(255,255,255,.45)', marginBottom: 2, fontWeight: 600 }}>PATRIMÔNIO TOTAL</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', letterSpacing: '-.02em', fontFamily: 'Sora,Inter,sans-serif' }}>R$ 45.333</div>
+      </div>
+
+      {/* Donut ring (pure CSS) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
         <div style={{ position: 'relative', width: 52, height: 52, flexShrink: 0 }}>
-          {/* Outer ring */}
+          {/* Background ring */}
           <div style={{
             position: 'absolute', inset: 0, borderRadius: '50%',
-            background: 'conic-gradient(#1565E0 0% 38%, #7C5CE0 38% 57%, #2DB36A 57% 72%, #F2A03D 72% 78%, #E5484D 78% 100%)',
+            background: `conic-gradient(
+              #1565E0 0% 61%,
+              #7C5CE0 61% 78%,
+              #22c55e 78% 94%,
+              #F2A03D 94% 100%
+            )`,
           }}/>
-          {/* Inner hole */}
+          {/* Inner circle cutout */}
           <div style={{
             position: 'absolute', inset: 10, borderRadius: '50%',
-            background: 'rgba(14,23,38,.95)',
-            display: 'grid', placeItems: 'center',
+            background: '#0E1726',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ fontSize: 6, color: '#A6B0C5', fontWeight: 700 }}>5 ativos</span>
+            <span style={{ fontSize: 7, color: 'rgba(255,255,255,.5)', fontWeight: 700 }}>6 ativos</span>
           </div>
         </div>
-        <div>
-          <div style={{ fontSize: 7, color: '#6F7A93', fontWeight: 600, marginBottom: 2, textTransform: 'uppercase', letterSpacing: '.04em' }}>Patrimônio</div>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#EAF0FB', fontFamily: 'Sora, sans-serif', letterSpacing: '-.02em' }}>R$ 45.333</div>
-          <div style={{ fontSize: 7, color: '#2DB36A', fontWeight: 600, marginTop: 1 }}>+R$ 4.333 total</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {[
+            { c: '#1565E0', l: 'Renda Fixa 61%' },
+            { c: '#7C5CE0', l: 'FII 17%' },
+            { c: '#22c55e', l: 'ETF/Ações 16%' },
+            { c: '#F2A03D', l: 'Cripto 6%' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: 5, height: 5, borderRadius: 2, background: item.c, flexShrink: 0 }}/>
+              <span style={{ fontSize: 7, color: 'rgba(255,255,255,.55)', fontWeight: 500 }}>{item.l}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Asset list */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 7 }}>
+      {/* Asset rows */}
+      <div style={{ fontSize: 8, color: 'rgba(255,255,255,.4)', marginBottom: 5, fontWeight: 600 }}>POSIÇÕES</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {assets.map((a, i) => (
-          <div key={i}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-              <span style={{ fontSize: 7.5, color: '#A6B0C5', fontWeight: 600 }}>{a.name}</span>
-              <span style={{ fontSize: 7.5, color: '#2DB36A', fontWeight: 700 }}>{a.pct}</span>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ width: 16, height: 16, borderRadius: 4, background: a.dot, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 7, color: '#fff', fontWeight: 700 }}>{a.label[0]}</span>
+              </div>
+              <div>
+                <div style={{ fontSize: 8, color: 'rgba(255,255,255,.8)', fontWeight: 600, lineHeight: 1.2 }}>{a.label}</div>
+                <div style={{ fontSize: 6.5, color: 'rgba(255,255,255,.35)' }}>{a.type}</div>
+              </div>
             </div>
-            <div style={{ height: 3, background: 'rgba(255,255,255,.06)', borderRadius: 999, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${a.barW}%`, background: a.color, borderRadius: 999 }}/>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 8, color: 'rgba(255,255,255,.7)', fontWeight: 600 }}>{a.val}</div>
+              <div style={{ fontSize: 7, color: a.c, fontWeight: 700 }}>{a.pct}</div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Legend dots */}
-      <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: '4px 8px' }}>
-        {[
-          { color: '#1565E0', label: 'R. Fixa' },
-          { color: '#7C5CE0', label: 'ETF' },
-          { color: '#2DB36A', label: 'FII' },
-          { color: '#F2A03D', label: 'Cripto' },
-        ].map((l, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <div style={{ width: 5, height: 5, borderRadius: 2, background: l.color }}/>
-            <span style={{ fontSize: 6.5, color: '#6F7A93' }}>{l.label}</span>
           </div>
         ))}
       </div>
