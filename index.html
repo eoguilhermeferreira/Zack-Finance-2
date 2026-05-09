@@ -419,107 +419,143 @@ html[data-theme="dark"] .alert-banner.info    { background:#0c1a3a; border-color
    MOBILE — ≤640px: full mobile-first layout
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width:640px) {
-  /* Typography */
+
+  /* ── Typography ─────────────────────────────────────────────────────── */
   body { font-size:15px; }
 
-  /* Page container — critical for no overflow */
+  /* ── Page container ─────────────────────────────────────────────────── */
   .page {
-    padding:14px 12px 80px;
-    width:100%; max-width:100%; overflow-x:hidden;
+    padding:16px 14px 88px;
+    width:100%; max-width:100%;
+    overflow-x:hidden; box-sizing:border-box;
   }
-  .page-head { margin-bottom:14px; gap:10px; }
+  .page-head { margin-bottom:14px; gap:8px; flex-wrap:wrap; }
   .page-head h1 { font-size:20px; }
   .page-head .sub { font-size:12.5px; }
 
-  /* Topbar */
+  /* ── Topbar ─────────────────────────────────────────────────────────── */
   .topbar { padding:0 12px; gap:6px; height:56px; --topbar-h:56px; }
   .search  { display:none; }
 
-  /* Stat grid: 2 columns on mobile */
-  .stat-grid { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:12px !important; }
+  /* ── Stat cards (dashboard sparkline style) ─────────────────────────── */
+  .stat-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
   .stat { padding:12px 10px; gap:6px; }
   .stat-head .label { font-size:9.5px; }
   .stat-icon { width:30px; height:30px; border-radius:8px; }
-  .stat-icon svg { transform:scale(.85); }
   .stat-value { font-size:15px; line-height:1.2; }
-  .stat-foot  { font-size:10.5px; }
+  .stat-foot  { font-size:10.5px; flex-wrap:wrap; gap:4px; }
   .spark-bg   { width:100px; height:38px; right:-6px; bottom:-1px; }
 
-  /* Charts — full width, contained */
+  /* ── Stat card row (icon + label + value — bills/goals/investments) ─── */
+  .sc-icon  { width:28px !important; height:28px !important; border-radius:8px !important; }
+  .sc-label { font-size:9px; letter-spacing:0; }
+  .sc-value { font-size:14px; }
+
+  /* ── Chart cards ─────────────────────────────────────────────────────── */
   .chart-card { padding:14px 12px; }
   .chart-head { margin-bottom:10px; }
   .chart-head h3 { font-size:13.5px; }
   .chart-tab { padding:4px 8px; font-size:11px; }
 
-  /* Grid layouts stack */
-  .grid-2-1 { grid-template-columns:1fr; gap:10px; }
-  .grid-3   { grid-template-columns:1fr; gap:10px; }
+  /* ── Grids — all stack to single column or 2-col max ─────────────────── */
+  .grid-2-1   { grid-template-columns:1fr; gap:10px; }
+  .grid-3     { grid-template-columns:repeat(2,1fr); gap:8px; }
+  .grid-3 > :last-child:nth-child(odd) { grid-column:1 / -1; }
+  .filter-row { grid-template-columns:1fr 1fr; gap:8px; }
+  .filter-row > :first-child { grid-column:1 / -1; }
 
-  /* Cards */
+  /* ── Cards ───────────────────────────────────────────────────────────── */
   .card { border-radius:14px; }
 
-  /* Table — horizontal scroll, not overflow */
-  .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -12px; }
+  /* ── Tables ──────────────────────────────────────────────────────────── */
+  .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -14px; width:calc(100% + 28px); }
   .table { font-size:12.5px; }
-  .table thead th { padding:8px 10px; font-size:10px; }
+  .table thead th { padding:8px 10px; font-size:10px; white-space:nowrap; }
   .table tbody td { padding:10px; }
+  .mobile-hide    { display:none !important; }
+  .col-hide-mobile{ display:none !important; }
 
-  /* Buttons — bigger touch targets */
-  .btn    { min-height:44px; padding:10px 14px; font-size:13.5px; }
-  .btn-sm { min-height:40px; padding:8px 12px; font-size:12.5px; }
+  /* ── Buttons ─────────────────────────────────────────────────────────── */
+  .btn      { min-height:46px; padding:10px 16px; font-size:14px; }
+  .btn-sm   { min-height:40px; padding:8px 12px;  font-size:12.5px; }
   .btn-icon { width:40px; height:40px; min-height:unset; }
 
-  /* Inputs */
+  /* ── Forms ───────────────────────────────────────────────────────────── */
   .input, .select { min-height:50px; padding:13px 14px; }
 
-  /* Modal — slides up from bottom */
+  /* ── Modal — bottom sheet on mobile ─────────────────────────────────── */
   .modal-backdrop { padding:0; align-items:flex-end; }
-  .modal { max-width:100% !important; border-radius:22px 22px 0 0; max-height:92vh; overflow-y:auto; }
-  .modal-head { padding:18px 18px 8px; }
-  .modal-body { padding:12px 18px 18px; }
-  .modal-foot { padding:12px 18px; }
+  .modal { max-width:100% !important; border-radius:24px 24px 0 0; max-height:94vh; overflow-y:auto; }
+  .modal-head { padding:20px 20px 8px; }
+  .modal-body { padding:14px 20px 20px; gap:12px; }
+  .modal-foot { padding:14px 20px; }
 
-  /* Toast */
+  /* ── Toast ───────────────────────────────────────────────────────────── */
   .toast-host { bottom:16px; right:10px; left:10px; max-width:unset; }
   .toast { min-width:unset; width:100%; font-size:14px; }
 
-  /* FAB */
-  .zack-fab { bottom:16px; right:12px; width:52px; height:52px; }
+  /* ── FAB ─────────────────────────────────────────────────────────────── */
+  .zack-fab { bottom:20px; right:14px; width:54px; height:54px; }
 
-  /* Chat */
-  .zack-chat { height:calc(100vh - 56px - 48px); }
+  /* ── Chat ────────────────────────────────────────────────────────────── */
+  .zack-chat { height:calc(100svh - 56px - 48px); min-height:300px; }
   .chat-messages { padding:12px; gap:10px; }
   .chat-bubble { font-size:14px; max-width:90%; padding:10px 13px; }
   .chat-input-row { padding:10px 12px; gap:8px; }
 
-  /* Notif dropdown */
-  .notif-dropdown { width:calc(100vw - 20px); right:-8px; max-height:75vh; }
+  /* ── Notification dropdown — full-width fixed overlay ───────────────── */
+  .notif-dropdown {
+    position:fixed !important;
+    top:60px; left:8px; right:8px;
+    width:auto !important; max-width:none !important;
+    max-height:72vh; transform-origin:top center;
+  }
 
-  /* Auth */
-  .auth-shell { grid-template-columns:1fr; }
-  .auth-art   { display:none; }
-  .auth-form-side { padding:28px 20px; min-height:100vh; place-items:start; padding-top:48px; }
-  .auth-form-side .form-card { max-width:100%; }
+  /* ── Alert banner ────────────────────────────────────────────────────── */
+  .alert-banner { padding:12px 14px; font-size:13px; flex-wrap:nowrap; }
 
-  /* Hide secondary table columns on mobile */
-  .col-hide-mobile { display:none; }
-  .mobile-hide { display:none !important; }
-
-  /* Stat card row — compact on mobile so values don't overflow */
-  .sc-icon  { width:28px !important; height:28px !important; border-radius:8px !important; }
-  .sc-label { font-size:9px; letter-spacing:0; }
-  .sc-value { font-size:14px; }
-
-  /* 3-column grid → 2 columns on mobile, 3rd item spans full row */
-  .grid-3 { grid-template-columns:repeat(2,1fr); gap:8px; }
-  .grid-3 > :last-child:nth-child(odd) { grid-column:1 / -1; }
-
-  /* Filter row in transactions → 2x2 grid */
-  .filter-row { grid-template-columns:1fr 1fr; gap:8px; }
-  .filter-row > :first-child { grid-column:1 / -1; }
-
-  /* Notification dropdown — full-width fixed overlay on mobile */
-  .notif-dropdown { position:fixed; top:56px; left:8px; right:8px; width:auto; max-width:none; max-height:70vh; transform-origin:top center; }
+  /* ─────────────────────────────────────────────────────────────────────
+     AUTH — hero banner above login form
+     ───────────────────────────────────────────────────────────────────── */
+  .auth-shell {
+    display:flex !important;
+    flex-direction:column;
+    min-height:100svh;
+  }
+  .auth-art {
+    display:flex !important;
+    flex-direction:column;
+    justify-content:flex-start;
+    min-height:unset;
+    padding:36px 24px 52px;
+    position:relative;
+    z-index:0;
+  }
+  /* Reduce the huge 48px gap below logo on mobile */
+  .auth-art > div:first-child > div:first-child { margin-bottom:20px !important; }
+  /* Smaller headline */
+  .auth-art h1 { font-size:26px !important; line-height:1.25 !important; max-width:100% !important; }
+  /* Hide description text — too long for mobile hero */
+  .auth-art > div:first-child > p { display:none !important; }
+  /* Hide floating mockup cards — they overflow on mobile */
+  .mockup-cards-area { display:none !important; }
+  /* Hide bullet feature list — save vertical space */
+  .auth-art > div:last-child { display:none !important; }
+  /* Form panel rises as a card above the hero */
+  .auth-form-side {
+    flex:1;
+    display:flex;
+    align-items:flex-start;
+    padding:28px 20px 48px;
+    min-height:unset;
+    background:var(--bg);
+    border-radius:24px 24px 0 0;
+    margin-top:-24px;
+    position:relative;
+    z-index:1;
+    box-shadow:0 -6px 24px rgba(0,0,0,.12);
+  }
+  .auth-form-side .form-card { width:100%; max-width:100%; }
 }
 
 @media print { .sidebar,.topbar,.bottom-nav,.zack-fab { display:none !important; } .page { padding:0; } }
