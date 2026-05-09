@@ -116,12 +116,12 @@ function InvestmentsPage() {
             <thead>
               <tr>
                 <th>Ativo</th>
-                <th>Tipo</th>
-                <th style={{ textAlign: 'right' }}>Aportado</th>
+                <th className="mobile-hide">Tipo</th>
+                <th className="mobile-hide" style={{ textAlign: 'right' }}>Aportado</th>
                 <th style={{ textAlign: 'right' }}>Atual</th>
                 <th style={{ textAlign: 'right' }}>Retorno</th>
-                <th style={{ textAlign: 'right' }}>Yield a.a.</th>
-                <th style={{ textAlign: 'right' }}>Peso</th>
+                <th className="mobile-hide" style={{ textAlign: 'right' }}>Yield a.a.</th>
+                <th className="mobile-hide" style={{ textAlign: 'right' }}>Peso</th>
               </tr>
             </thead>
             <tbody>
@@ -134,12 +134,12 @@ function InvestmentsPage() {
                       <div style={{ fontWeight: 600, fontSize: 13.5 }}>{inv.name}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-3)', fontFamily: 'JetBrains Mono' }}>{inv.ticker}</div>
                     </td>
-                    <td>
+                    <td className="mobile-hide">
                       <span className="inv-type" style={{ background: (typeColors[inv.type] || '#888') + '20', color: typeColors[inv.type] || '#888' }}>
                         {inv.type}
                       </span>
                     </td>
-                    <td className="tabular" style={{ textAlign: 'right', color: 'var(--text-2)' }}>{fmt.brl(inv.invested)}</td>
+                    <td className="mobile-hide tabular" style={{ textAlign: 'right', color: 'var(--text-2)' }}>{fmt.brl(inv.invested)}</td>
                     <td className="tabular" style={{ textAlign: 'right', fontWeight: 600 }}>{fmt.brl(inv.current)}</td>
                     <td style={{ textAlign: 'right' }}>
                       <div className={`tabular ${isPos ? 'delta-up' : 'delta-down'}`} style={{ fontWeight: 700 }}>
@@ -149,10 +149,10 @@ function InvestmentsPage() {
                         {fmt.pct(inv.returnPct)}
                       </div>
                     </td>
-                    <td className="tabular" style={{ textAlign: 'right', color: inv.yieldPct > 0 ? 'var(--brand-green-soft)' : 'var(--text-3)' }}>
+                    <td className="mobile-hide tabular" style={{ textAlign: 'right', color: inv.yieldPct > 0 ? 'var(--brand-green-soft)' : 'var(--text-3)' }}>
                       {inv.yieldPct > 0 ? inv.yieldPct.toFixed(2).replace('.', ',') + '%' : '—'}
                     </td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td className="mobile-hide" style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
                         <div style={{ width: 48, height: 6, background: 'var(--line)', borderRadius: 99 }}>
                           <div style={{ width: weight + '%', height: '100%', background: typeColors[inv.type] || '#888', borderRadius: 99 }}/>
