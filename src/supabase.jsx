@@ -43,7 +43,7 @@
 // CREATE POLICY "own" ON chat_messages USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 // ─── CONFIGURE HERE ───────────────────────────────────────────────────────────
-const SUPABASE_URL      = 'https://qkroxfiooboaezoxwom.supabase.co';
+const SUPABASE_URL      = 'https://qkroxfioobhoaezoxwom.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrcm94Zmlvb2Job2Flem94d29tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyODg2NDYsImV4cCI6MjA5Mzg2NDY0Nn0.zEXVt_mnHsVC3pK9_oI9Hw1KJo-BG7NC41qGssvUgWk';
 // ─────────────────────────────────────────────────────────────────────────────
 
