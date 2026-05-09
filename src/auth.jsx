@@ -85,13 +85,6 @@ function AuthPage() {
             </p>
           </div>
 
-          {!supabaseActive && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 13px', background: '#eff6ff', borderRadius: 10, border: '1px solid #bfdbfe', fontSize: 13, color: '#1e40af', marginBottom: 18, lineHeight: 1.5 }}>
-              <span style={{ fontSize: 16, flexShrink: 0 }}>ℹ️</span>
-              <span><strong>Modo demo:</strong> Supabase não configurado. Qualquer e-mail/senha válida funciona.</span>
-            </div>
-          )}
-
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {mode === 'register' && (
               <div className="field">
