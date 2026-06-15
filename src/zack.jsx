@@ -1,9 +1,9 @@
 // ─── Zack global config ───────────────────────────────────────────────────────
-// Set openaiKey to enable real AI responses via OpenAI chat completions API.
+// Set claudeKey to enable real AI responses via the Claude (Anthropic) API.
 // When empty, the keyword-matching fallback is used automatically.
 const ZACK_CONFIG = {
-  openaiKey: '',           // e.g. 'sk-...' — leave empty to use offline fallback
-  model: 'gpt-4o-mini',   // OpenAI model to use
+  claudeKey: '',                  // e.g. 'sk-ant-...' — leave empty to use offline fallback
+  model: 'claude-sonnet-4-6',     // Claude model to use
 };
 
 // ─── Build OpenAI system prompt from user financial data ─────────────────────
@@ -50,39 +50,40 @@ ${billList || 'Nenhuma conta pendente'}
 - Encoraje hábitos financeiros saudáveis.`;
 }
 
-// ─── OpenAI API call ──────────────────────────────────────────────────────────
-async function callOpenAI(userMessage, ctx) {
-  const key = ZACK_CONFIG.openaiKey.trim();
+// ─── Claude API call ──────────────────────────────────────────────────────────
+async function callClaude(userMessage, ctx) {
+  const key = ZACK_CONFIG.claudeKey.trim();
   if (!key) return null; // will use fallback
 
   const systemPrompt = buildSystemPrompt(ctx);
 
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key}`,
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: ZACK_CONFIG.model || 'gpt-4o-mini',
+        model: ZACK_CONFIG.model || 'claude-sonnet-4-6',
+        max_tokens: 600,
+        system: systemPrompt,
         messages: [
-          { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage },
         ],
-        max_tokens: 600,
-        temperature: 0.7,
       }),
     });
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      console.warn('[Zack AI] OpenAI error:', res.status, err?.error?.message);
+      console.warn('[Zack AI] Claude error:', res.status, err?.error?.message);
       return null; // fall back to local
     }
 
     const data = await res.json();
-    return data?.choices?.[0]?.message?.content || null;
+    return data?.content?.[0]?.text || null;
   } catch (e) {
     console.warn('[Zack AI] fetch error:', e.message);
     return null;
@@ -126,21 +127,21 @@ function generateFallbackResponse(input, context) {
 
 // ─── Main response dispatcher ─────────────────────────────────────────────────
 async function generateResponse(input, context) {
-  // Try OpenAI first; fall back to keyword matching if key not set or API fails
-  const aiReply = await callOpenAI(input, context);
+  // Try Claude first; fall back to keyword matching if key not set or API fails
+  const aiReply = await callClaude(input, context);
   if (aiReply) return aiReply;
   return generateFallbackResponse(input, context);
 }
 
 // ─── API Key Config Modal ─────────────────────────────────────────────────────
 function ZackConfigModal({ onClose }) {
-  const [key, setKey] = React.useState(ZACK_CONFIG.openaiKey);
+  const [key, setKey] = React.useState(ZACK_CONFIG.claudeKey);
   const [model, setModel] = React.useState(ZACK_CONFIG.model);
   const [show, setShow] = React.useState(false);
 
   const save = () => {
-    ZACK_CONFIG.openaiKey = key.trim();
-    ZACK_CONFIG.model = model.trim() || 'gpt-4o-mini';
+    ZACK_CONFIG.claudeKey = key.trim();
+    ZACK_CONFIG.model = model.trim() || 'claude-sonnet-4-6';
     onClose(true);
   };
 
@@ -150,7 +151,7 @@ function ZackConfigModal({ onClose }) {
         <div className="modal-head">
           <div>
             <h3>Configurar Zack AI</h3>
-            <p>Conecte sua chave OpenAI para respostas com IA real.</p>
+            <p>Conecte sua chave da API Claude (Anthropic) para respostas com IA real.</p>
           </div>
           <button className="btn btn-ghost btn-icon btn-sm" onClick={() => onClose(false)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -158,14 +159,14 @@ function ZackConfigModal({ onClose }) {
         </div>
         <div className="modal-body">
           <div className="field">
-            <label>Chave da API OpenAI</label>
+            <label>Chave da API Claude</label>
             <div style={{ position: 'relative' }}>
               <input
                 className="input"
                 type={show ? 'text' : 'password'}
                 value={key}
                 onChange={e => setKey(e.target.value)}
-                placeholder="sk-..."
+                placeholder="sk-ant-..."
                 style={{ paddingRight: 44 }}
               />
               <button type="button" onClick={() => setShow(s => !s)}
@@ -180,10 +181,9 @@ function ZackConfigModal({ onClose }) {
           <div className="field">
             <label>Modelo</label>
             <select className="select" value={model} onChange={e => setModel(e.target.value)}>
-              <option value="gpt-4o-mini">gpt-4o-mini (rápido e econômico)</option>
-              <option value="gpt-4o">gpt-4o (mais inteligente)</option>
-              <option value="gpt-4-turbo">gpt-4-turbo</option>
-              <option value="gpt-3.5-turbo">gpt-3.5-turbo (mais barato)</option>
+              <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (equilibrado)</option>
+              <option value="claude-opus-4-8">Claude Opus 4.8 (mais inteligente)</option>
+              <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (rápido e econômico)</option>
             </select>
           </div>
           {!key && (
@@ -215,7 +215,7 @@ function ZackPage() {
   const [input, setInput] = React.useState('');
   const [typing, setTyping] = React.useState(false);
   const [showConfig, setShowConfig] = React.useState(false);
-  const [aiEnabled, setAiEnabled] = React.useState(Boolean(ZACK_CONFIG.openaiKey));
+  const [aiEnabled, setAiEnabled] = React.useState(Boolean(ZACK_CONFIG.claudeKey));
   const bottomRef = React.useRef(null);
   const inputRef = React.useRef(null);
 
@@ -246,7 +246,7 @@ function ZackPage() {
   const handleConfigClose = (saved) => {
     setShowConfig(false);
     if (saved) {
-      setAiEnabled(Boolean(ZACK_CONFIG.openaiKey));
+      setAiEnabled(Boolean(ZACK_CONFIG.claudeKey));
     }
   };
 
@@ -277,17 +277,17 @@ function ZackPage() {
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>Zack AI</h2>
             <div style={{ fontSize: 12.5, color: aiEnabled ? 'var(--brand-green-soft)' : 'var(--text-3)', fontWeight: 600 }}>
-              {aiEnabled ? '● Online — OpenAI conectado' : '● Online — modo offline'}
+              {aiEnabled ? '● Online — Claude conectado' : '● Online — modo offline'}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
             <button
               className="btn btn-sm btn-ghost"
               onClick={() => setShowConfig(true)}
-              title="Configurar API OpenAI"
+              title="Configurar API Claude"
             >
               <IcoSettings size={14}/>
-              {aiEnabled ? 'OpenAI ativo' : 'Configurar IA'}
+              {aiEnabled ? 'Claude ativo' : 'Configurar IA'}
             </button>
             <button className="btn btn-sm btn-ghost" onClick={() => setMessages([{
               id: Date.now(), role: 'assistant', text: `Conversa reiniciada! Olá novamente, ${user.name}. Como posso ajudar?`,
