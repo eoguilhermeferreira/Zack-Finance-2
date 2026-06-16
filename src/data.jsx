@@ -196,7 +196,7 @@ function AppProvider({ children }) {
     const newTxn = { id: 't' + Date.now(), ...txn };
     setTransactions(ts => [newTxn, ...ts]);
     addToast('Transação adicionada!');
-    if (supabaseEnabled) saveTransaction(newTxn).catch(() => {});
+    if (supabaseEnabled) saveTransaction(newTxn).catch(e => { console.error('[Zack] saveTransaction:', e); addToast('Erro ao salvar transação.', 'error'); });
   };
 
   const editTransaction = (id, updates) => {
@@ -204,14 +204,14 @@ function AppProvider({ children }) {
     addToast('Transação atualizada!');
     if (supabaseEnabled) {
       const updated = transactions.find(t => t.id === id);
-      if (updated) saveTransaction({ ...updated, ...updates }).catch(() => {});
+      if (updated) saveTransaction({ ...updated, ...updates }).catch(e => { console.error('[Zack] updateTransaction:', e); });
     }
   };
 
   const deleteTransaction = id => {
     setTransactions(ts => ts.filter(t => t.id !== id));
     addToast('Transação removida.', 'error');
-    if (supabaseEnabled) deleteTransactionRemote(id).catch(() => {});
+    if (supabaseEnabled) deleteTransactionRemote(id).catch(e => console.error('[Zack] deleteTransaction:', e));
   };
 
   // ── Bills ─────────────────────────────────────────────────────────────────
@@ -219,13 +219,13 @@ function AppProvider({ children }) {
     setBills(bs => bs.map(b => b.id === id ? { ...b, ...updates } : b));
     if (supabaseEnabled) {
       const updated = bills.find(b => b.id === id);
-      if (updated) saveBill({ ...updated, ...updates }).catch(() => {});
+      if (updated) saveBill({ ...updated, ...updates }).catch(e => { console.error('[Zack] updateBill:', e); addToast('Erro ao atualizar conta no banco.', 'error'); });
     }
   };
 
   const addBill = bill => {
     setBills(bs => [...bs, bill]);
-    if (supabaseEnabled) saveBill(bill).catch(() => {});
+    if (supabaseEnabled) saveBill(bill).catch(e => { console.error('[Zack] saveBill:', e); addToast('Erro ao salvar conta no banco.', 'error'); });
   };
 
   // ── Goals ─────────────────────────────────────────────────────────────────
@@ -233,7 +233,7 @@ function AppProvider({ children }) {
     const g = { id: 'g' + Date.now(), ...goal };
     setGoals(gs => [...gs, g]);
     addToast('Meta criada!');
-    if (supabaseEnabled) saveGoal(g).catch(() => {});
+    if (supabaseEnabled) saveGoal(g).catch(e => { console.error('[Zack] saveGoal:', e); addToast('Erro ao salvar meta.', 'error'); });
   };
 
   const editGoal = (id, updates) => {
@@ -241,14 +241,14 @@ function AppProvider({ children }) {
     addToast('Meta atualizada!');
     if (supabaseEnabled) {
       const updated = goals.find(g => g.id === id);
-      if (updated) saveGoal({ ...updated, ...updates }).catch(() => {});
+      if (updated) saveGoal({ ...updated, ...updates }).catch(e => console.error('[Zack] updateGoal:', e));
     }
   };
 
   const deleteGoal = id => {
     setGoals(gs => gs.filter(g => g.id !== id));
     addToast('Meta removida.', 'error');
-    if (supabaseEnabled) deleteGoalRemote(id).catch(() => {});
+    if (supabaseEnabled) deleteGoalRemote(id).catch(e => console.error('[Zack] deleteGoal:', e));
   };
 
   // ── Derived stats (all computed from real data) ───────────────────────────
