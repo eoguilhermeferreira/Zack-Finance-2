@@ -76,7 +76,7 @@ const supaReq = async (method, path, body) => {
   try {
     const res  = await fetch(`${SUPABASE_URL}${path}`, {
       method,
-      headers: { ...supaHeaders(), Prefer: 'return=representation' },
+      headers: supaHeaders(),
       body:    body != null ? JSON.stringify(body) : undefined,
     });
     const data = await res.json().catch(() => ({}));
