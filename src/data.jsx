@@ -157,7 +157,7 @@ function AppProvider({ children }) {
   const login = async (email, password) => {
     if (!supabaseEnabled) return { error: 'Sistema não configurado. Contate o administrador.' };
     const { data, error } = await supaSignIn(email, password);
-    if (error) return { error: error.error_description || error.msg || 'E-mail ou senha incorretos.' };
+    if (error) return { error: error.message || 'E-mail ou senha incorretos.' };
     const nm = data.user?.user_metadata?.full_name || email.split('@')[0];
     setUser({ name: nm, email, initials: nm.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() });
     setAuthed(true);
@@ -168,8 +168,8 @@ function AppProvider({ children }) {
   const register = async (email, password, name) => {
     if (!supabaseEnabled) return { error: 'Sistema não configurado. Contate o administrador.' };
     const { data, error } = await supaSignUp(email, password, name);
-    if (error) return { error: error.msg || error.message || 'Erro ao criar conta.' };
-    if (data?.access_token) {
+    if (error) return { error: error.message || 'Erro ao criar conta.' };
+    if (data?.session) {
       setUser({ name, email, initials: name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() });
       setAuthed(true);
       _syncFromSupabase(setTransactions, setInvestments, setBills, setGoals);
