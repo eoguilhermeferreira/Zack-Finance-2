@@ -93,36 +93,52 @@ async function callClaude(userMessage, ctx) {
 // ─── Keyword-matching fallback responses ──────────────────────────────────────
 function generateFallbackResponse(input, context) {
   const q = input.toLowerCase();
-  const { balance, income, expenses, savingsRate, totalInvested } = context;
+  const { balance, income, expenses, savingsRate, totalInvested, totalReturn, transactions, investments, bills } = context;
+
+  const pendingBills = (bills || []).filter(b => b.status !== 'paid');
+  const overdueBills = (bills || []).filter(b => b.status === 'overdue');
+  const totalPending = pendingBills.reduce((s, b) => s + (b.amount || 0), 0);
 
   if (q.match(/saldo|quanto tenho|dinheiro/)) {
-    return `Seu saldo atual é de **${fmt.brl(balance)}**. Este mês você recebeu ${fmt.brl(income)} e gastou ${fmt.brl(expenses)}, resultando em um saldo positivo de ${fmt.brl(income - expenses)}. 💪`;
+    return `Seu saldo atual é de **${fmt.brl(balance)}**. Este mês você recebeu ${fmt.brl(income)} e gastou ${fmt.brl(expenses)}.`;
   }
-  if (q.match(/gastr|gasei|despesa|gast/)) {
-    return `Em maio, suas despesas totalizaram **${fmt.brl(expenses)}**. As principais categorias foram:\n\n• 🏠 Moradia: R$ 2.500 (maior gasto)\n• 🍔 Alimentação: R$ 287\n• 💊 Saúde: R$ 189\n• 📱 Assinaturas: R$ 78\n\nSua taxa de poupança está em **${savingsRate}%** — excelente!`;
+  if (q.match(/despesa|gast/)) {
+    const cats = {};
+    (transactions || []).filter(t => t.amount < 0).forEach(t => { cats[t.category] = (cats[t.category] || 0) + Math.abs(t.amount); });
+    const top = Object.entries(cats).sort((a,b) => b[1]-a[1]).slice(0,4).map(([c,v]) => `• ${c}: ${fmt.brl(v)}`).join('\n');
+    return `Suas despesas do mês totalizam **${fmt.brl(expenses)}**.\n\n${top || 'Nenhuma despesa registrada ainda.'}\n\nTaxa de poupança: **${savingsRate}%**`;
   }
-  if (q.match(/poupan|econom|guardar|meta/)) {
-    return `Sua taxa de poupança atual é de **${savingsRate}%**, o que é muito bom! 🎯\n\nAlgumas dicas para aumentar ainda mais:\n\n1. **Regra 50/30/20**: 50% necessidades, 30% desejos, 20% poupança\n2. Configure transferências automáticas no dia do salário\n3. Revise suas assinaturas — você tem R$ 77,80/mês em assinaturas\n\nVocê está no caminho certo!`;
+  if (q.match(/poupan|econom|guardar/)) {
+    return `Sua taxa de poupança está em **${savingsRate}%**. Continue assim!\n\nDica: tente aumentar para 20% guardando R$ ${fmt.brl(income * 0.2 - (income - expenses))} a mais por mês.`;
   }
   if (q.match(/invest|carteira|ação|fundo|renda fixa|cdb|tesouro/)) {
-    return `Sua carteira de investimentos vale **${fmt.brl(totalInvested)}** com retorno positivo! 📈\n\nComposição atual:\n• Renda Fixa: 61% (mais conservador e seguro)\n• ETF & Ações: 28% (exposição ao crescimento)\n• FII: 17% (renda passiva)\n• Cripto: 6% (alta volatilidade)\n\nEm renda fixa o Tesouro Selic e CDB Nubank estão performando bem. O PETR4 está com -4,88% — pode ser momento de revisar.`;
+    if (!investments || investments.length === 0) return `Você ainda não tem investimentos cadastrados. Acesse a aba **Investimentos** para adicionar.`;
+    const list = investments.map(i => `• ${i.name}: ${fmt.brl(i.current)} (retorno ${i.returnPct >= 0 ? '+' : ''}${i.returnPct.toFixed(1)}%)`).join('\n');
+    return `Sua carteira vale **${fmt.brl(totalInvested)}** com retorno de **${fmt.brl(totalReturn)}**.\n\n${list}`;
   }
   if (q.match(/conta|pagar|boleto|vencimento|pend/)) {
-    return `Você tem **2 contas pendentes** este mês:\n\n• Seguro Saúde: R$ 450,00 — vence dia 25\n• Energia Elétrica: R$ 185,00 — vence dia 20\n\nTotal pendente: **R$ 635,00**\n\nE o PlayStation Plus está **vencido** — recomendo regularizar para evitar suspensão.`;
+    if (pendingBills.length === 0) return `Você não tem contas pendentes. Tudo em dia! ✅`;
+    const list = pendingBills.map(b => `• ${b.name}: ${fmt.brl(b.amount)} — vence dia ${b.dueDay}${b.status === 'overdue' ? ' (**VENCIDA**)' : ''}`).join('\n');
+    return `Você tem **${pendingBills.length} conta${pendingBills.length > 1 ? 's' : ''} pendente${pendingBills.length > 1 ? 's' : ''}**:\n\n${list}\n\nTotal: **${fmt.brl(totalPending)}**${overdueBills.length > 0 ? `\n\n⚠️ ${overdueBills.length} conta(s) vencida(s) — regularize o quanto antes.` : ''}`;
   }
   if (q.match(/receita|salário|renda|ganho/)) {
-    return `Sua renda em maio foi de **${fmt.brl(income)}**:\n\n• 💼 Salário: R$ 8.500 (principal)\n• 💻 Freelance: R$ 1.800 (bônus)\n\nFreelance adicionou +21% à sua renda principal! Considere declarar como MEI para pagar menos impostos.`;
+    return `Sua receita do mês é de **${fmt.brl(income)}**.`;
   }
   if (q.match(/relat|analise|análise|resumo/)) {
-    return `📊 **Resumo Financeiro — Maio 2026**\n\n• **Saldo atual:** ${fmt.brl(balance)}\n• **Receitas:** ${fmt.brl(income)}\n• **Despesas:** ${fmt.brl(expenses)}\n• **Taxa de poupança:** ${savingsRate}%\n• **Patrimônio investido:** ${fmt.brl(totalInvested)}\n\nSua situação financeira está saudável. Continue assim!`;
+    return `📊 **Resumo Financeiro**\n\n• **Saldo:** ${fmt.brl(balance)}\n• **Receitas:** ${fmt.brl(income)}\n• **Despesas:** ${fmt.brl(expenses)}\n• **Poupança:** ${savingsRate}%\n• **Investido:** ${fmt.brl(totalInvested)}\n• **Contas pendentes:** ${pendingBills.length}`;
   }
   if (q.match(/oi|olá|hello|boa|tudo bem/)) {
-    return `Olá! 👋 Sou o Zack, seu assistente financeiro inteligente.\n\nPosso te ajudar com:\n• Análise de despesas e receitas\n• Situação dos seus investimentos\n• Contas a pagar e vencimentos\n• Dicas de economia e planejamento\n• Resumos e relatórios\n\nO que você gostaria de saber?`;
+    return `Olá! 👋 Sou o Zack, seu assistente financeiro.\n\nPosso te ajudar com:\n• Saldo e despesas\n• Investimentos\n• Contas a pagar\n• Resumos e dicas\n\nO que você quer saber?`;
   }
-  if (q.match(/dica|conselho|como|melhorar/)) {
-    return `Aqui estão 3 dicas personalizadas para você hoje:\n\n1. **Reduzir alimentação fora** 🍔 — Você gastou com iFood e restaurantes. Cozinhar mais em casa pode economizar R$ 200-300/mês.\n\n2. **Investir mais** 📈 — Com ${savingsRate}% de poupança, considere aumentar aportes em Tesouro Direto ou CDB.\n\n3. **Quitar dívidas prioritárias** 💳 — Se usar o cartão de crédito, pague a fatura integral para evitar juros altos.\n\nQuer mais detalhes sobre algum desses pontos?`;
+  if (q.match(/dica|conselho|melhorar/)) {
+    const tips = [];
+    if (savingsRate < 10) tips.push('**Aumentar poupança** — tente guardar pelo menos 10% da sua renda.');
+    if (overdueBills.length > 0) tips.push(`**Pagar contas vencidas** — você tem ${overdueBills.length} conta(s) em atraso.`);
+    if (!investments || investments.length === 0) tips.push('**Começar a investir** — mesmo R$ 50/mês no Tesouro Selic já faz diferença.');
+    if (tips.length === 0) tips.push('Sua situação financeira está boa! Continue mantendo o controle dos gastos.');
+    return `Dicas para você:\n\n${tips.map((t, i) => `${i + 1}. ${t}`).join('\n')}`;
   }
-  return `Entendi sua pergunta sobre "${input.slice(0, 50)}..."\n\nEstou aqui para ajudar com suas finanças! Posso analisar:\n\n• 💰 Seus gastos e receitas\n• 📊 Carteira de investimentos\n• 🗓️ Contas a pagar\n• 💡 Dicas de economia\n\nComo posso ajudar?`;
+  return `Posso te ajudar com:\n\n• 💰 Saldo e despesas\n• 📊 Investimentos\n• 🗓️ Contas a pagar\n• 💡 Dicas de economia\n\nO que você quer saber?`;
 }
 
 // ─── Main response dispatcher ─────────────────────────────────────────────────
@@ -281,14 +297,6 @@ function ZackPage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
-            <button
-              className="btn btn-sm btn-ghost"
-              onClick={() => setShowConfig(true)}
-              title="Configurar API Claude"
-            >
-              <IcoSettings size={14}/>
-              {aiEnabled ? 'Claude ativo' : 'Configurar IA'}
-            </button>
             <button className="btn btn-sm btn-ghost" onClick={() => setMessages([{
               id: Date.now(), role: 'assistant', text: `Conversa reiniciada! Olá novamente, ${user.name}. Como posso ajudar?`,
               time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
