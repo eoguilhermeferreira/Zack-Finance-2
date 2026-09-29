@@ -128,7 +128,7 @@ img { max-width: 100%; display: block; }
 /* ─── App layout ────────────────────────────────────────────────────────────── */
 #app {
   display:grid; grid-template-columns:var(--sidebar-w) 1fr;
-  height:100vh; width:100%; overflow:hidden;
+  height:100vh; height:100dvh; width:100%; overflow:hidden;
   isolation:isolate; /* establish stacking context so z-index works between FAB and modals */
 }
 #app.collapsed { --sidebar-w:76px; }
@@ -136,7 +136,7 @@ img { max-width: 100%; display: block; }
 /* ─── Desktop Sidebar ───────────────────────────────────────────────────────── */
 .sidebar {
   background:var(--surface); border-right:1px solid var(--line);
-  height:100vh;
+  height:100vh; height:100dvh;
   display:flex; flex-direction:column; overflow:hidden;
   transition:width .2s ease;
 }
@@ -224,7 +224,7 @@ html[data-theme="dark"] .mobile-nav-item.active { background:color-mix(in oklab,
 .mobile-sidebar-foot { border-top:1px solid var(--line); padding:16px 18px; display:flex; align-items:center; gap:12px; flex-shrink:0; }
 
 /* ─── Main area ─────────────────────────────────────────────────────────────── */
-.main-area { display:flex; flex-direction:column; min-width:0; overflow-x:hidden; overflow-y:auto; height:100vh; }
+.main-area { display:flex; flex-direction:column; min-width:0; overflow-x:hidden; overflow-y:auto; height:100vh; height:100dvh; }
 
 /* ─── Topbar ─────────────────────────────────────────────────────────────────── */
 .topbar {
@@ -409,7 +409,8 @@ html[data-theme="dark"] .alert-banner.info    { background:#0c1a3a; border-color
    TABLET — ≤880px: hide desktop sidebar, show hamburger
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width:880px) {
-  #app { grid-template-columns:1fr; }
+  #app { grid-template-columns:1fr; height:100vh; height:100dvh; overflow:hidden; }
+  .main-area { height:100vh; height:100dvh; overflow-y:auto; }
   .sidebar { display:none; }
   .hamburger-btn { display:flex !important; }
   .topbar { padding:0 14px; }
