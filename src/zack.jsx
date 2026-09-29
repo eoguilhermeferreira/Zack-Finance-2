@@ -100,45 +100,55 @@ function generateFallbackResponse(input, context) {
   const totalPending = pendingBills.reduce((s, b) => s + (b.amount || 0), 0);
 
   if (q.match(/saldo|quanto tenho|dinheiro/)) {
-    return `Seu saldo atual é de **${fmt.brl(balance)}**. Este mês você recebeu ${fmt.brl(income)} e gastou ${fmt.brl(expenses)}.`;
+    if (balance === 0 && income === 0) return `Ainda não tem nenhuma transação registrada. Adiciona suas receitas e despesas na aba Transações!`;
+    return `Seu saldo atual é **${fmt.brl(balance)}**. Esse mês entrou ${fmt.brl(income)} e saiu ${fmt.brl(expenses)}.`;
   }
   if (q.match(/despesa|gast/)) {
     const cats = {};
     (transactions || []).filter(t => t.amount < 0).forEach(t => { cats[t.category] = (cats[t.category] || 0) + Math.abs(t.amount); });
-    const top = Object.entries(cats).sort((a,b) => b[1]-a[1]).slice(0,4).map(([c,v]) => `• ${c}: ${fmt.brl(v)}`).join('\n');
-    return `Suas despesas do mês totalizam **${fmt.brl(expenses)}**.\n\n${top || 'Nenhuma despesa registrada ainda.'}\n\nTaxa de poupança: **${savingsRate}%**`;
+    const top = Object.entries(cats).sort((a,b) => b[1]-a[1]).slice(0,4).map(([c,v]) => `• ${CATEGORIES[c]?.label || c}: ${fmt.brl(v)}`).join('\n');
+    if (!top) return `Ainda não tem despesas registradas esse mês.`;
+    return `Esse mês você gastou **${fmt.brl(expenses)}** no total:\n\n${top}\n\nTaxa de poupança: **${savingsRate}%**`;
   }
   if (q.match(/poupan|econom|guardar/)) {
-    return `Sua taxa de poupança está em **${savingsRate}%**. Continue assim!\n\nDica: tente aumentar para 20% guardando R$ ${fmt.brl(income * 0.2 - (income - expenses))} a mais por mês.`;
+    if (income === 0) return `Adiciona sua receita do mês pra eu calcular sua taxa de poupança!`;
+    return `Você está poupando **${savingsRate}%** da sua renda esse mês. ${savingsRate >= 20 ? 'Ótimo!' : savingsRate >= 10 ? 'Razoável, mas dá pra melhorar!' : 'Tenta chegar em pelo menos 10%.'}`;
   }
   if (q.match(/invest|carteira|ação|fundo|renda fixa|cdb|tesouro/)) {
-    if (!investments || investments.length === 0) return `Você ainda não tem investimentos cadastrados. Acesse a aba **Investimentos** para adicionar.`;
-    const list = investments.map(i => `• ${i.name}: ${fmt.brl(i.current)} (retorno ${i.returnPct >= 0 ? '+' : ''}${i.returnPct.toFixed(1)}%)`).join('\n');
-    return `Sua carteira vale **${fmt.brl(totalInvested)}** com retorno de **${fmt.brl(totalReturn)}**.\n\n${list}`;
+    if (!investments || investments.length === 0) return `Você ainda não tem investimentos cadastrados. Adiciona na aba Investimentos!`;
+    const list = investments.map(i => `• ${i.name}: ${fmt.brl(i.current)} (${i.returnPct >= 0 ? '+' : ''}${i.returnPct.toFixed(1)}%)`).join('\n');
+    return `Sua carteira está em **${fmt.brl(totalInvested)}** com retorno de ${totalReturn >= 0 ? '+' : ''}**${fmt.brl(totalReturn)}**:\n\n${list}`;
   }
   if (q.match(/conta|pagar|boleto|vencimento|pend/)) {
-    if (pendingBills.length === 0) return `Você não tem contas pendentes. Tudo em dia! ✅`;
-    const list = pendingBills.map(b => `• ${b.name}: ${fmt.brl(b.amount)} — vence dia ${b.dueDay}${b.status === 'overdue' ? ' (**VENCIDA**)' : ''}`).join('\n');
-    return `Você tem **${pendingBills.length} conta${pendingBills.length > 1 ? 's' : ''} pendente${pendingBills.length > 1 ? 's' : ''}**:\n\n${list}\n\nTotal: **${fmt.brl(totalPending)}**${overdueBills.length > 0 ? `\n\n⚠️ ${overdueBills.length} conta(s) vencida(s) — regularize o quanto antes.` : ''}`;
+    if (pendingBills.length === 0) return `Nenhuma conta pendente. Tudo em dia! ✅`;
+    const list = pendingBills.map(b => `• ${b.name}: ${fmt.brl(b.amount)} — dia ${b.dueDay}${b.status === 'overdue' ? ' (**atrasada**)' : ''}`).join('\n');
+    return `Você tem ${pendingBills.length} conta${pendingBills.length > 1 ? 's' : ''} pendente${pendingBills.length > 1 ? 's' : ''}:\n\n${list}\n\nTotal: **${fmt.brl(totalPending)}**`;
   }
   if (q.match(/receita|salário|renda|ganho/)) {
-    return `Sua receita do mês é de **${fmt.brl(income)}**.`;
+    if (income === 0) return `Ainda não registrou receita esse mês.`;
+    return `Sua receita esse mês foi de **${fmt.brl(income)}**.`;
   }
   if (q.match(/relat|analise|análise|resumo/)) {
-    return `📊 **Resumo Financeiro**\n\n• **Saldo:** ${fmt.brl(balance)}\n• **Receitas:** ${fmt.brl(income)}\n• **Despesas:** ${fmt.brl(expenses)}\n• **Poupança:** ${savingsRate}%\n• **Investido:** ${fmt.brl(totalInvested)}\n• **Contas pendentes:** ${pendingBills.length}`;
+    return `Aqui está seu resumo:\n\n• Saldo: **${fmt.brl(balance)}**\n• Receitas: **${fmt.brl(income)}**\n• Despesas: **${fmt.brl(expenses)}**\n• Poupança: **${savingsRate}%**\n• Investido: **${fmt.brl(totalInvested)}**\n• Contas pendentes: **${pendingBills.length}**`;
   }
-  if (q.match(/oi|olá|hello|boa|tudo bem/)) {
-    return `Olá! 👋 Sou o Zack, seu assistente financeiro.\n\nPosso te ajudar com:\n• Saldo e despesas\n• Investimentos\n• Contas a pagar\n• Resumos e dicas\n\nO que você quer saber?`;
+  if (q.match(/^(oi|olá|ola|hey|e aí|eai|eaí|salve|bom dia|boa tarde|boa noite|hello)[\s!?]*$/)) {
+    return `Oi! Tudo certo por aqui. O que você quer saber sobre suas finanças?`;
+  }
+  if (q.match(/tudo (bem|bom|certo|ok)|como (vai|tá|ta|estás)/)) {
+    return `Tudo ótimo! E com você? Me fala o que posso te ajudar hoje.`;
+  }
+  if (q.match(/^(vlw|valeu|obrigad|obg|thanks|tmj|boa|show|ok|okay|certo|entendi|perfeito|massa|top|legal)[\s!?]*$/)) {
+    return `De nada! Se precisar de mais alguma coisa é só chamar. 😊`;
   }
   if (q.match(/dica|conselho|melhorar/)) {
     const tips = [];
-    if (savingsRate < 10) tips.push('**Aumentar poupança** — tente guardar pelo menos 10% da sua renda.');
-    if (overdueBills.length > 0) tips.push(`**Pagar contas vencidas** — você tem ${overdueBills.length} conta(s) em atraso.`);
-    if (!investments || investments.length === 0) tips.push('**Começar a investir** — mesmo R$ 50/mês no Tesouro Selic já faz diferença.');
-    if (tips.length === 0) tips.push('Sua situação financeira está boa! Continue mantendo o controle dos gastos.');
-    return `Dicas para você:\n\n${tips.map((t, i) => `${i + 1}. ${t}`).join('\n')}`;
+    if (savingsRate < 10) tips.push('Tenta guardar pelo menos 10% da sua renda todo mês.');
+    if (overdueBills.length > 0) tips.push(`Você tem ${overdueBills.length} conta(s) vencida(s) — vale regularizar logo pra evitar juros.`);
+    if (!investments || investments.length === 0) tips.push('Ainda não tem investimentos cadastrados. Mesmo R$ 50/mês no Tesouro Selic já é um bom começo.');
+    if (tips.length === 0) tips.push('Sua situação tá boa! Continue controlando os gastos e aportando todo mês.');
+    return tips.join('\n\n');
   }
-  return `Posso te ajudar com:\n\n• 💰 Saldo e despesas\n• 📊 Investimentos\n• 🗓️ Contas a pagar\n• 💡 Dicas de economia\n\nO que você quer saber?`;
+  return `Não entendi muito bem. Pode me perguntar sobre seu saldo, despesas, contas a pagar ou investimentos que eu respondo certinho.`;
 }
 
 // ─── Main response dispatcher ─────────────────────────────────────────────────
