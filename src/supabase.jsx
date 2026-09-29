@@ -97,7 +97,12 @@ async function saveBill(bill) {
   if (!uid) return;
   await _supa.from('bills').upsert({
     id: bill.id, name: bill.name, amount: bill.amount,
-    due_day: bill.dueDay, category: bill.category, status: bill.status, user_id: uid,
+    due_day: bill.dueDay, category: bill.category, status: bill.status,
+    type: bill.type || 'recorrente',
+    installments: bill.installments || null,
+    current_installment: bill.currentInstallment || null,
+    start_month: bill.startMonth || null,
+    user_id: uid,
   });
 }
 
@@ -109,6 +114,10 @@ async function loadBills() {
   return data ? data.map(r => ({
     id: r.id, name: r.name, amount: r.amount,
     dueDay: r.due_day, category: r.category, status: r.status,
+    type: r.type || 'recorrente',
+    installments: r.installments || null,
+    currentInstallment: r.current_installment || null,
+    startMonth: r.start_month || null,
   })) : null;
 }
 
