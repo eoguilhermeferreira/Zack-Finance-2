@@ -2,8 +2,8 @@
 // Set claudeKey to enable real AI responses via the Claude (Anthropic) API.
 // When empty, the keyword-matching fallback is used automatically.
 const ZACK_CONFIG = {
-  claudeKey: '',                  // e.g. 'sk-ant-...' — leave empty to use offline fallback
-  model: 'claude-sonnet-4-6',     // Claude model to use
+  get claudeKey() { try { return localStorage.getItem('zack_claude_key') || ''; } catch { return ''; } },
+  model: 'claude-sonnet-4-6',
 };
 
 // ─── Build OpenAI system prompt from user financial data ─────────────────────
