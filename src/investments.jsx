@@ -11,15 +11,19 @@ function InvestmentsPage() {
   const typeColors = { 'Renda Fixa': '#1F8A4C', 'ETF': '#1FA8E0', 'Ações': '#1565E0', 'FII': '#F2A03D', 'Cripto': '#7C5CE0' };
   const allocationData = Object.entries(byType).map(([label, value]) => ({ label, value, color: typeColors[label] || '#8A93A6' }));
 
-  // Performance history (mock monthly data)
-  const perfData = [
-    { month: 'Dez', value: 35800 },
-    { month: 'Jan', value: 37200 },
-    { month: 'Fev', value: 38600 },
-    { month: 'Mar', value: 40100 },
-    { month: 'Abr', value: 42800 },
-    { month: 'Mai', value: totalInvested },
-  ];
+  // Performance history — last 6 months, real value only for current month
+  const perfData = React.useMemo(() => {
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(1);
+      d.setMonth(d.getMonth() - i);
+      const label = d.toLocaleDateString('pt-BR', { month: 'short' });
+      const monthLabel = label.charAt(0).toUpperCase() + label.slice(1, 3);
+      months.push({ month: monthLabel, value: i === 0 ? totalInvested : 0 });
+    }
+    return months;
+  }, [totalInvested]);
 
   return (
     <div className="page fadein">
