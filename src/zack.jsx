@@ -129,24 +129,40 @@ function generateFallbackResponse(input, context) {
   if (q.match(/relat|analise|análise|resumo/)) {
     return `Aqui está seu resumo:\n\n• Saldo: **${fmt.brl(balance)}**\n• Receitas: **${fmt.brl(income)}**\n• Despesas: **${fmt.brl(expenses)}**\n• Poupança: **${savingsRate}%**\n• Investido: **${fmt.brl(totalInvested)}**\n• Contas pendentes: **${pendingBills.length}**`;
   }
-  if (q.match(/^(oi|olá|ola|hey|e aí|eai|eaí|salve|bom dia|boa tarde|boa noite|hello)[\s!?]*$/)) {
-    return `Oi! Tudo certo por aqui. O que você quer saber sobre suas finanças?`;
+  if (q.match(/\b(oi|olá|ola|hey|eai|e aí|salve|bom dia|boa tarde|boa noite|hello|hi)\b/)) {
+    const hasPending = pendingBills.length > 0;
+    const hasInv = investments && investments.length > 0;
+    const hint = hasPending
+      ? `Você tem **${pendingBills.length} conta(s) pendente(s)** este mês.`
+      : hasInv
+      ? `Sua carteira está em **${fmt.brl(totalInvested)}**.`
+      : income > 0
+      ? `Você tem **${fmt.brl(income)}** de receita registrada este mês.`
+      : `Ainda não tem dados financeiros registrados — add suas transações para eu te ajudar melhor!`;
+    return `Oi! ${hint}\n\nPode me perguntar qualquer coisa sobre suas finanças que eu te respondo.`;
   }
-  if (q.match(/tudo (bem|bom|certo|ok)|como (vai|tá|ta|estás)/)) {
-    return `Tudo ótimo! E com você? Me fala o que posso te ajudar hoje.`;
+  if (q.match(/tudo (bem|bom|certo|ok)|como (vai|tá|ta|você está)/)) {
+    return `Tudo certo por aqui! E você, como estão as finanças? Me pergunta qualquer coisa.`;
   }
-  if (q.match(/vlw|valeu|obrigad|obg|thanks|agradec|grat|tmj|boa|show|perfeito|massa|top|legal|incrível|excelente|muito bom|demais/)) {
+  if (q.match(/vlw|valeu|obrigad|obg|thanks|agradec|grat|tmj|show|perfeito|massa|top|legal|incrível|excelente|muito bom|demais/)) {
     return `De nada! Se precisar de mais alguma coisa é só chamar. 😊`;
   }
-  if (q.match(/dica|conselho|melhorar/)) {
+  if (q.match(/dica|conselho|melhorar|ajuda|o que (você|vc) (faz|pode)|como funciona/)) {
     const tips = [];
-    if (savingsRate < 10) tips.push('Tenta guardar pelo menos 10% da sua renda todo mês.');
-    if (overdueBills.length > 0) tips.push(`Você tem ${overdueBills.length} conta(s) vencida(s) — vale regularizar logo pra evitar juros.`);
-    if (!investments || investments.length === 0) tips.push('Ainda não tem investimentos cadastrados. Mesmo R$ 50/mês no Tesouro Selic já é um bom começo.');
+    if (savingsRate < 10 && income > 0) tips.push('Tenta guardar pelo menos 10% da sua renda todo mês.');
+    if (overdueBills.length > 0) tips.push(`Você tem ${overdueBills.length} conta(s) vencida(s) — vale regularizar logo.`);
+    if (!investments || investments.length === 0) tips.push('Ainda não tem investimentos. Mesmo R$ 50/mês no Tesouro Selic já é um bom começo.');
     if (tips.length === 0) tips.push('Sua situação tá boa! Continue controlando os gastos e aportando todo mês.');
-    return tips.join('\n\n');
+    return tips.join('\n\n') + `\n\nPode me perguntar sobre saldo, despesas, contas a pagar, investimentos ou pedir um resumo.`;
   }
-  return `Não entendi muito bem. Pode me perguntar sobre seu saldo, despesas, contas a pagar ou investimentos que eu respondo certinho.`;
+  if (q.match(/o que (você|vc) sabe|o que (você|vc) (pode|consegue)|quais são suas|suas funções/)) {
+    return `Consigo te ajudar com:\n\n• **Saldo e receitas** — quanto você tem e ganhou\n• **Despesas** — onde você gastou mais\n• **Contas a pagar** — pendentes e vencidas\n• **Investimentos** — carteira e retorno\n• **Resumo financeiro** — visão geral do mês\n• **Dicas** — baseadas nos seus dados reais\n\nSó perguntar!`;
+  }
+  // Catch-all: give a helpful context-aware response instead of "não entendi"
+  if (income > 0 || transactions.length > 0) {
+    return `Hmm, não entendi bem. Mas posso te ajudar com seu saldo (${fmt.brl(balance)}), suas despesas, contas a pagar ou investimentos. O que você queria saber?`;
+  }
+  return `Não entendi bem. Tente perguntar sobre seu saldo, despesas, contas a pagar ou investimentos!`;
 }
 
 // ─── Main response dispatcher ─────────────────────────────────────────────────
@@ -301,7 +317,7 @@ function ZackPage() {
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>Zack AI</h2>
             <div style={{ fontSize: 12.5, color: aiEnabled ? 'var(--brand-green-soft)' : 'var(--text-3)', fontWeight: 600 }}>
-              {aiEnabled ? '● Online — Claude conectado' : '● Online — modo offline'}
+              ● Online
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
