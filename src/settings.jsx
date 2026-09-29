@@ -6,16 +6,6 @@ function SettingsPage() {
   const [currency, setCurrency] = React.useState('BRL');
   const [notifs, setNotifs] = React.useState({ bills: true, weekly: true, insights: true, goals: false });
   const [showLogout, setShowLogout] = React.useState(false);
-  const [claudeKey, setClaudeKey] = React.useState(() => { try { return localStorage.getItem('zack_claude_key') || ''; } catch { return ''; } });
-  const [showKey, setShowKey] = React.useState(false);
-  const [keySaved, setKeySaved] = React.useState(false);
-
-  const saveClaudeKey = () => {
-    try { localStorage.setItem('zack_claude_key', claudeKey.trim()); } catch {}
-    addToast('Chave da API salva!');
-    setKeySaved(true);
-    setTimeout(() => setKeySaved(false), 2000);
-  };
 
   const saveProfile = () => {
     addToast('Perfil salvo com sucesso!');
@@ -152,34 +142,6 @@ function SettingsPage() {
           <Row key={n.key} label={n.label} sub={n.sub}
             right={<Toggle value={notifs[n.key]} onChange={() => toggleNotif(n.key)}/>}/>
         ))}
-      </Section>
-
-      {/* Zack AI */}
-      <Section title="Zack AI — Chave da API">
-        <p style={{ fontSize: 13.5, color: 'var(--text-2)', marginBottom: 16 }}>
-          Cole sua chave da API da Anthropic para ativar o assistente Zack AI. A chave é salva só no seu navegador e nunca enviada para nenhum servidor.
-        </p>
-        <div className="field" style={{ marginBottom: 12 }}>
-          <label>Chave API (sk-ant-...)</label>
-          <div style={{ position: 'relative' }}>
-            <input
-              className="input"
-              type={showKey ? 'text' : 'password'}
-              value={claudeKey}
-              onChange={e => setClaudeKey(e.target.value)}
-              placeholder="sk-ant-api03-..."
-              style={{ paddingRight: 46 }}
-            />
-            <button type="button" onClick={() => setShowKey(s => !s)}
-              style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 4 }}>
-              {showKey ? <IcoEyeOff size={18}/> : <IcoEye size={18}/>}
-            </button>
-          </div>
-        </div>
-        <button className="btn btn-primary btn-sm" onClick={saveClaudeKey}>
-          {keySaved ? <><IcoCheck size={14}/>Salvo!</> : 'Salvar chave'}
-        </button>
       </Section>
 
       {/* Plan */}
