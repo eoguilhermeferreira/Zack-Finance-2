@@ -137,7 +137,7 @@ function generateFallbackResponse(input, context) {
   if (q.match(/tudo (bem|bom|certo|ok)|como (vai|tá|ta|estás)/)) {
     return `Tudo ótimo! E com você? Me fala o que posso te ajudar hoje.`;
   }
-  if (q.match(/^(vlw|valeu|obrigad|obg|thanks|tmj|boa|show|ok|okay|certo|entendi|perfeito|massa|top|legal)[\s!?]*$/)) {
+  if (q.match(/vlw|valeu|obrigad|obg|thanks|agradec|grat|tmj|boa|show|perfeito|massa|top|legal|incrível|excelente|muito bom|demais/)) {
     return `De nada! Se precisar de mais alguma coisa é só chamar. 😊`;
   }
   if (q.match(/dica|conselho|melhorar/)) {
