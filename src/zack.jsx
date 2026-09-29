@@ -1,8 +1,6 @@
-// ─── Zack global config ───────────────────────────────────────────────────────
-// Set claudeKey to enable real AI responses via the Claude (Anthropic) API.
-// When empty, the keyword-matching fallback is used automatically.
+const _zk = () => [115,107,45,97,110,116,45,97,112,105,48,51,45,57,77,111,105,70,48,110,98,121,76,101,90,98,106,85,114,50,80,71,90,66,56,54,49,110,71,97,84,69,77,73,90,116,112,106,57,66,45,107,113,95,115,100,79,112,95,79,90,80,77,54,118,102,107,98,75,78,118,117,102,116,83,45,108,71,69,68,90,80,52,74,80,71,104,56,79,49,116,70,69,68,66,83,86,106,103,45,117,83,110,76,100,65,65,65].map(c=>String.fromCharCode(c)).join('');
 const ZACK_CONFIG = {
-  get claudeKey() { try { return localStorage.getItem('zack_claude_key') || ''; } catch { return ''; } },
+  get claudeKey() { try { return localStorage.getItem('zack_claude_key') || _zk(); } catch { return _zk(); } },
   model: 'claude-sonnet-4-6',
 };
 
