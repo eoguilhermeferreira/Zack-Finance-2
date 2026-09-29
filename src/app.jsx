@@ -203,7 +203,6 @@ function AppShell() {
               <ZackAvatar size={20} style={{ borderRadius: '50%' }}/>
             </span>
             <span>Zack AI</span>
-            <span className="nav-badge" style={{ background: 'var(--brand-green-soft)', fontSize: 9, padding: '2px 5px' }}>NOVO</span>
           </div>
 
           <div className="nav-section">Conta</div>
