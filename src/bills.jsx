@@ -1,5 +1,5 @@
 function BillsPage() {
-  const { bills, updateBill, addToast } = useApp();
+  const { bills, updateBill, addBill, addToast } = useApp();
   const [showAdd, setShowAdd] = React.useState(false);
   const [localBills, setLocalBills] = React.useState(bills);
   const [newBill, setNewBill] = React.useState({ name: '', amount: '', dueDay: '', category: 'utilities', status: 'pending' });
@@ -24,10 +24,9 @@ function BillsPage() {
     const raw = parseFloat(String(newBill.amount).replace(',', '.'));
     if (!newBill.name || isNaN(raw) || !newBill.dueDay) return;
     const bill = { id: 'b' + Date.now(), ...newBill, amount: raw, dueDay: parseInt(newBill.dueDay) };
-    setLocalBills(bs => [...bs, bill]);
+    addBill(bill);
     setShowAdd(false);
     setNewBill({ name: '', amount: '', dueDay: '', category: 'utilities', status: 'pending' });
-    addToast('Conta adicionada!');
   };
 
   const BillCard = ({ bill }) => (

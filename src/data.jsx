@@ -308,10 +308,11 @@ async function _syncFromSupabase(setTransactions, setInvestments, setBills, setG
     const [txns, invs, bls, gls] = await Promise.all([
       loadTransactions(), loadInvestments(), loadBills(), loadGoals(),
     ]);
-    // Always set state — even empty arrays (user starts fresh)
     if (txns !== null) setTransactions(txns);
     if (invs !== null) setInvestments(invs);
     if (bls  !== null) setBills(bls);
     if (gls  !== null) setGoals(gls);
-  } catch (_) {}
+  } catch (e) {
+    console.error('[Zack] Sync from Supabase failed:', e);
+  }
 }
