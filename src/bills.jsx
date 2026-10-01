@@ -53,9 +53,10 @@ function BillsPage() {
     return monthDiff(b.startMonth, selectedMonth) + 1;
   };
 
-  const paid    = visibleBills.filter(b => b.status === 'paid');
-  const pending = visibleBills.filter(b => b.status === 'pending');
-  const overdue = visibleBills.filter(b => b.status === 'overdue');
+  const sortByDay = arr => [...arr].sort((a, b) => (a.dueDay || 0) - (b.dueDay || 0));
+  const paid    = sortByDay(visibleBills.filter(b => b.status === 'paid'));
+  const pending = sortByDay(visibleBills.filter(b => b.status === 'pending'));
+  const overdue = sortByDay(visibleBills.filter(b => b.status === 'overdue'));
 
   const totalMonthly = visibleBills.reduce((s, b) => s + b.amount, 0);
   const totalPaid    = paid.reduce((s, b) => s + b.amount, 0);
