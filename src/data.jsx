@@ -228,6 +228,12 @@ function AppProvider({ children }) {
     if (supabaseEnabled) saveBill(bill).catch(e => { console.error('[Zack] saveBill:', e); addToast('Erro ao salvar conta no banco.', 'error'); });
   };
 
+  const deleteBill = id => {
+    setBills(bs => bs.filter(b => b.id !== id));
+    addToast('Conta removida.', 'error');
+    if (supabaseEnabled) deleteBillRemote(id).catch(e => console.error('[Zack] deleteBill:', e));
+  };
+
   // ── Goals ─────────────────────────────────────────────────────────────────
   const addGoal = goal => {
     const g = { id: 'g' + Date.now(), ...goal };
@@ -290,7 +296,7 @@ function AppProvider({ children }) {
       theme, toggleTheme,
       user, toasts, addToast,
       transactions, addTransaction, editTransaction, deleteTransaction,
-      investments, bills, updateBill, addBill,
+      investments, bills, updateBill, addBill, deleteBill,
       goals, addGoal, editGoal, deleteGoal,
       balance, income, expenses, savingsRate, totalInvested, totalReturn,
       monthlyData, alerts,

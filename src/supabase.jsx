@@ -141,6 +141,11 @@ async function loadGoals() {
   })) : null;
 }
 
+async function deleteBillRemote(id) {
+  if (!_supa) return;
+  await _supa.from('bills').delete().eq('id', id);
+}
+
 async function deleteGoalRemote(id) {
   if (!_supa) return;
   await _supa.from('goals').delete().eq('id', id);

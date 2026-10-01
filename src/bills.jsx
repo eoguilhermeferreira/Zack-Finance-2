@@ -1,5 +1,6 @@
 function BillsPage() {
-  const { bills, updateBill, addBill, addToast } = useApp();
+  const { bills, updateBill, addBill, deleteBill, addToast } = useApp();
+  const [confirmDelete, setConfirmDelete] = React.useState(null);
 
   // Month selector
   const today = new Date();
@@ -31,7 +32,11 @@ function BillsPage() {
   const visibleBills = React.useMemo(() => {
     return bills.filter(b => {
       const t = b.type || 'recorrente';
-      if (t === 'recorrente') return true;
+      if (t === 'recorrente') {
+        // Only show from the month it was added onwards
+        if (!b.startMonth) return true;
+        return monthDiff(b.startMonth, selectedMonth) >= 0;
+      }
       if (t === 'avulsa') return b.startMonth === selectedMonth;
       if (t === 'parcelada') {
         if (!b.startMonth || !b.installments) return true;
@@ -79,7 +84,7 @@ function BillsPage() {
       type: newBill.type,
       installments: newBill.type === 'parcelada' ? parseInt(newBill.installments) || null : null,
       currentInstallment: newBill.type === 'parcelada' ? 1 : null,
-      startMonth: newBill.type !== 'recorrente' ? newBill.startMonth : null,
+      startMonth: newBill.startMonth, // all types store startMonth (recorrente uses today's month)
     };
     addBill(bill);
     setShowAdd(false);
@@ -122,6 +127,10 @@ function BillsPage() {
               <IcoCheck size={13}/>Pagar
             </button>
           )}
+          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setConfirmDelete(bill)}
+            title="Excluir" style={{ color: 'var(--brand-red)', flexShrink: 0 }}>
+            <IcoTrash size={15}/>
+          </button>
         </div>
       </div>
     );
@@ -215,6 +224,14 @@ function BillsPage() {
           subtitle="Adicione uma conta recorrente, parcelada ou avulsa."
           action={<button className="btn btn-primary btn-sm" onClick={() => setShowAdd(true)}><IcoPlus size={14}/>Adicionar conta</button>}/>
       )}
+
+      {/* Delete confirm */}
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => { deleteBill(confirmDelete.id); setConfirmDelete(null); }}
+        title="Excluir conta"
+        message={`Tem certeza que deseja excluir "${confirmDelete?.name}"? Ela será removida de todos os meses.`}/>
 
       {/* Add modal */}
       <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Nova Conta" subtitle="Recorrente, parcelada ou avulsa"
