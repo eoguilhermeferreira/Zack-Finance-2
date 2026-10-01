@@ -22,7 +22,7 @@ function buildSystemPrompt(ctx) {
 
   return `Você é o Zack, assistente financeiro pessoal inteligente do app Zack Finance. Responda sempre em português do Brasil, de forma clara, amigável e personalizada com os dados reais do usuário.
 
-## Dados financeiros atuais do usuário (maio 2026):
+## Dados financeiros atuais do usuário (${new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}):
 - Saldo atual: R$ ${balance.toFixed(2)}
 - Receitas do mês: R$ ${income.toFixed(2)}
 - Despesas do mês: R$ ${expenses.toFixed(2)}

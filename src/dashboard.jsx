@@ -1,3 +1,21 @@
+function LiveClock() {
+  const [now, setNow] = React.useState(new Date());
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const dateStr = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--surface-2)', border: '1px solid var(--line)', borderRadius: 12, padding: '10px 16px', fontSize: 13 }}>
+      <IcoCalendar size={16} style={{ color: 'var(--brand)', flexShrink: 0 }}/>
+      <span style={{ color: 'var(--text-2)', textTransform: 'capitalize' }}>{dateStr}</span>
+      <span style={{ color: 'var(--text-3)', margin: '0 4px' }}>·</span>
+      <span className="tabular" style={{ fontWeight: 700, color: 'var(--text-1)', letterSpacing: '0.03em' }}>{timeStr}</span>
+    </div>
+  );
+}
+
 function DashboardPage({ onNavigate }) {
   const {
     balance, income, expenses, savingsRate, totalInvested, totalReturn,
@@ -8,7 +26,13 @@ function DashboardPage({ onNavigate }) {
   const pendingBills = bills.filter(b => b.status !== 'paid');
   const pendingTotal = pendingBills.reduce((s, b) => s + b.amount, 0);
 
-  const currentMonth = new Date().toISOString().slice(0, 7);
+  const now = new Date();
+  const currentMonth = now.toISOString().slice(0, 7);
+  const currentMonthShort = now.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+  const currentMonthLabel = currentMonthShort.charAt(0).toUpperCase() + currentMonthShort.slice(1);
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMonthLabel = prevMonthDate.toLocaleDateString('pt-BR', { month: 'long' });
+
   const thisMo = transactions.filter(t => t.date.startsWith(currentMonth) && t.amount < 0);
   const byCat  = {};
   thisMo.forEach(t => { byCat[t.category] = (byCat[t.category] || 0) + Math.abs(t.amount); });
@@ -22,9 +46,9 @@ function DashboardPage({ onNavigate }) {
 
   const statCards = [
     { label: 'Saldo Total',      value: fmt.brl(balance),    icon: <IcoWallet size={18} style={{ color: '#1565E0' }}/>,          iconBg: '#dbeafe', delta: '+R$ 2.180', deltaUp: true,  sub: 'vs. mês anterior', spark: sparkBalance,  sparkColor: '#1565E0' },
-    { label: 'Receitas Mai.',    value: fmt.brl(income),     icon: <IcoArrowUpRight size={18} style={{ color: '#1F8A4C' }}/>,    iconBg: '#dcfce7', delta: '+R$ 1.458', deltaUp: true,  sub: 'vs. abril',        spark: sparkIncome,   sparkColor: '#2DB36A' },
-    { label: 'Despesas Mai.',    value: fmt.brl(expenses),   icon: <IcoArrowDown size={18} style={{ color: '#E5484D' }}/>,       iconBg: '#fee2e2', delta: '-R$ 2.059', deltaUp: true,  sub: 'vs. abril',        spark: sparkExpense,  sparkColor: '#E5484D' },
-    { label: 'Taxa de Poupança', value: savingsRate + '%',   icon: <IcoPiggyBank size={18} style={{ color: '#7C5CE0' }}/>,       iconBg: '#ede9fe', delta: '+8%',       deltaUp: true,  sub: 'vs. abril',        spark: [32,30,35,38,40,savingsRate], sparkColor: '#7C5CE0' },
+    { label: `Receitas ${currentMonthLabel}.`, value: fmt.brl(income),   icon: <IcoArrowUpRight size={18} style={{ color: '#1F8A4C' }}/>, iconBg: '#dcfce7', delta: '+R$ 1.458', deltaUp: true, sub: `vs. ${prevMonthLabel}`, spark: sparkIncome,  sparkColor: '#2DB36A' },
+    { label: `Despesas ${currentMonthLabel}.`, value: fmt.brl(expenses), icon: <IcoArrowDown size={18} style={{ color: '#E5484D' }}/>,   iconBg: '#fee2e2', delta: '-R$ 2.059', deltaUp: true, sub: `vs. ${prevMonthLabel}`, spark: sparkExpense, sparkColor: '#E5484D' },
+    { label: 'Taxa de Poupança', value: savingsRate + '%',   icon: <IcoPiggyBank size={18} style={{ color: '#7C5CE0' }}/>,       iconBg: '#ede9fe', delta: '+8%',       deltaUp: true,  sub: `vs. ${prevMonthLabel}`, spark: [32,30,35,38,40,savingsRate], sparkColor: '#7C5CE0' },
   ];
 
   // Top alert for dashboard banner
@@ -39,11 +63,10 @@ function DashboardPage({ onNavigate }) {
       <div className="page-head">
         <div>
           <h1>Dashboard</h1>
-          <p className="sub">
-            {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })} · Visão geral das suas finanças
-          </p>
+          <p className="sub">Visão geral das suas finanças</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <LiveClock/>
           <button className="btn btn-sm" onClick={() => onNavigate('transactions')}>
             <IcoPlus size={15}/>Nova transação
           </button>
