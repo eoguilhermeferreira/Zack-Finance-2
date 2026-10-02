@@ -39,6 +39,9 @@ function AppShell() {
     income, expenses, alerts,
   } = useApp();
 
+  // Run notification checks whenever data changes
+  useNotifications();
+
   const [page,       setPage]       = React.useState('dashboard');
   const [collapsed,  setCollapsed]  = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);

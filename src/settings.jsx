@@ -1,11 +1,20 @@
 function SettingsPage() {
-  const { user, theme, toggleTheme, logout, addToast } = useApp();
-  const [name, setName] = React.useState(user.name);
-  const [email, setEmail] = React.useState(user.email);
-  const [saved, setSaved] = React.useState(false);
+  const { user, theme, toggleTheme, logout, addToast, transactions, investments, bills, goals } = useApp();
+  const [name, setName]       = React.useState(user.name);
+  const [email, setEmail]     = React.useState(user.email);
+  const [saved, setSaved]     = React.useState(false);
   const [currency, setCurrency] = React.useState('BRL');
-  const [notifs, setNotifs] = React.useState({ bills: true, weekly: true, insights: true, goals: false });
   const [showLogout, setShowLogout] = React.useState(false);
+  const [notifPerm, setNotifPerm]   = React.useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+  );
+
+  const [notifs, setNotifs] = React.useState({
+    bills:    ZackNotif.billsEnabled,
+    weekly:   ZackNotif.weeklyEnabled,
+    insights: ZackNotif.insightsEnabled,
+    goals:    ZackNotif.goalsEnabled,
+  });
 
   const saveProfile = () => {
     addToast('Perfil salvo com sucesso!');
@@ -13,7 +22,43 @@ function SettingsPage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const toggleNotif = k => setNotifs(n => ({ ...n, [k]: !n[k] }));
+  const toggleNotif = async key => {
+    // Request permission on first enable
+    if (!notifs[key] && notifPerm !== 'granted') {
+      const p = await ZackNotif.requestPermission();
+      setNotifPerm(p);
+      if (p !== 'granted') {
+        addToast('Permissão de notificação negada. Ative nas configurações do navegador.', 'warning');
+        return;
+      }
+    }
+    const next = !notifs[key];
+    setNotifs(n => ({ ...n, [key]: next }));
+    if (key === 'bills')    ZackNotif.setBills(next);
+    if (key === 'weekly')   ZackNotif.setWeekly(next);
+    if (key === 'insights') ZackNotif.setInsights(next);
+    if (key === 'goals')    ZackNotif.setGoals(next);
+    addToast(next ? 'Notificações ativadas!' : 'Notificações desativadas.', next ? 'success' : 'error');
+  };
+
+  const exportData = () => {
+    const data = {
+      exportedAt: new Date().toISOString(),
+      user: { name: user.name, email: user.email },
+      transactions,
+      investments,
+      bills,
+      goals,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `zack-finance-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addToast('Dados exportados com sucesso!');
+  };
 
   const Toggle = ({ value, onChange }) => (
     <button onClick={onChange} style={{
@@ -38,11 +83,11 @@ function SettingsPage() {
 
   const Row = ({ label, sub, right }) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--line-2)' }}>
-      <div>
+      <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 14, fontWeight: 500 }}>{label}</div>
         {sub && <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 2 }}>{sub}</div>}
       </div>
-      {right}
+      <div style={{ flexShrink: 0 }}>{right}</div>
     </div>
   );
 
@@ -57,20 +102,21 @@ function SettingsPage() {
 
       {/* Profile */}
       <Section title="Perfil">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-          <div className="avatar" style={{ width: 56, height: 56, fontSize: 18, borderRadius: '50%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+          <div className="avatar" style={{ width: 56, height: 56, fontSize: 18, borderRadius: '50%', flexShrink: 0 }}>
             {user.initials}
           </div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>{user.name}</div>
-            <div style={{ color: 'var(--text-2)', fontSize: 13.5 }}>{user.email}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
+            <div style={{ color: 'var(--text-2)', fontSize: 13.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
           </div>
-          <button className="btn btn-sm" style={{ marginLeft: 'auto' }}>
+          <button className="btn btn-sm" style={{ flexShrink: 0 }}
+            onClick={() => addToast('Foto de perfil em breve!', 'warning')}>
             <IcoUpload size={14}/>Foto
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 16 }}>
           <div className="field">
             <label>Nome completo</label>
             <input className="input" value={name} onChange={e => setName(e.target.value)}/>
@@ -80,7 +126,7 @@ function SettingsPage() {
             <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)}/>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 16 }}>
           <div className="field">
             <label>Senha atual</label>
             <input className="input" type="password" placeholder="••••••••"/>
@@ -133,11 +179,16 @@ function SettingsPage() {
 
       {/* Notifications */}
       <Section title="Notificações">
+        {notifPerm === 'denied' && (
+          <div style={{ background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#92400e' }}>
+            ⚠️ Notificações bloqueadas no navegador. Ative em Configurações do navegador → Permissões → Notificações.
+          </div>
+        )}
         {[
-          { key: 'bills',    label: 'Vencimento de contas',  sub: 'Alertas 3 dias antes do vencimento' },
+          { key: 'bills',    label: 'Vencimento de contas',  sub: 'Aviso 3, 2 dias antes e no dia do vencimento' },
           { key: 'weekly',   label: 'Resumo semanal',        sub: 'Relatório financeiro toda segunda-feira' },
-          { key: 'insights', label: 'Insights do Zack',      sub: 'Dicas e análises personalizadas' },
-          { key: 'goals',    label: 'Metas financeiras',     sub: 'Progresso das metas definidas' },
+          { key: 'insights', label: 'Insights do Zack',      sub: 'Alerta quando gastos ultrapassarem 80% da renda' },
+          { key: 'goals',    label: 'Metas financeiras',     sub: 'Aviso quando meta estiver em risco' },
         ].map(n => (
           <Row key={n.key} label={n.label} sub={n.sub}
             right={<Toggle value={notifs[n.key]} onChange={() => toggleNotif(n.key)}/>}/>
@@ -147,12 +198,12 @@ function SettingsPage() {
       {/* Security */}
       <Section title="Segurança">
         <Row label="Autenticação 2 fatores" sub="Adicione uma camada extra de segurança"
-          right={<Toggle value={false} onChange={() => addToast('Em breve disponível!', 'warning')}/>}/>
+          right={<Toggle value={false} onChange={() => addToast('Autenticação 2 fatores em breve!', 'warning')}/>}/>
         <Row label="Sessões ativas" sub="1 sessão ativa" right={
-          <button className="btn btn-sm btn-ghost" onClick={() => addToast('Sessões encerradas.', 'error')}>Encerrar outras</button>
+          <button className="btn btn-sm btn-ghost" onClick={() => addToast('Outras sessões encerradas.', 'error')}>Encerrar outras</button>
         }/>
-        <Row label="Exportar dados" sub="Baixe todos os seus dados em JSON"
-          right={<button className="btn btn-sm"><IcoDownload size={13}/>Exportar</button>}/>
+        <Row label="Exportar dados" sub="Baixe todas as suas finanças em JSON"
+          right={<button className="btn btn-sm" onClick={exportData}><IcoDownload size={13}/>Exportar</button>}/>
       </Section>
 
       {/* Sign out */}
