@@ -1,7 +1,7 @@
 // ─── ZackAvatar component ─────────────────────────────────────────────────────
 function ZackAvatar({ size = 36, style = {}, className = '' }) {
   const [srcIdx, setSrcIdx] = React.useState(0);
-  const srcs = ['./assets/zack-mascot.png', './assets/zack-mascot.svg'];
+  const srcs = ['./assets/zack-mascot.png?v=3', './assets/zack-mascot.svg'];
 
   if (srcIdx >= srcs.length) {
     // All image sources failed — show branded "Z" fallback
