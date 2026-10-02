@@ -75,16 +75,19 @@ function AppShell() {
     { id: 'goals',        label: 'Metas',            icon: <IcoTarget size={20}/> },
   ];
 
-  const mobileNavItems = [
-    { id: 'dashboard',    label: 'Dashboard',       icon: <IcoDashboard size={22}/>,    filter: null },
-    { id: 'transactions', label: 'Entradas',         icon: <IcoArrowUpRight size={22}/>, filter: 'income'  },
-    { id: 'transactions', label: 'Despesas',         icon: <IcoArrowDown size={22}/>,    filter: 'expense' },
-    { id: 'investments',  label: 'Investimentos',    icon: <IcoTrendingUp size={22}/>,   filter: null },
-    { id: 'reports',      label: 'Relatórios',       icon: <IcoBarChart size={22}/>,     filter: null },
-    { id: 'bills',        label: 'Contas a Pagar',   icon: <IcoReceipt size={22}/>,      filter: null },
-    { id: 'goals',        label: 'Metas',            icon: <IcoTarget size={22}/>,       filter: null },
-    { id: 'zack',         label: 'Chat com Zack',    icon: <IcoBot size={22}/>,          filter: null, badge: 'IA' },
-    { id: 'settings',     label: 'Configurações',    icon: <IcoSettings size={22}/>,     filter: null },
+  const mobileNavSections = [
+    {
+      title: 'Principal',
+      items: navItems.map(item => ({ ...item, icon: React.cloneElement(item.icon, { size: 22 }) })),
+    },
+    {
+      title: 'IA',
+      items: [{ id: 'zack', label: 'Zack AI', icon: <IcoBot size={22}/> }],
+    },
+    {
+      title: 'Conta',
+      items: [{ id: 'settings', label: 'Configurações', icon: <IcoSettings size={22}/> }],
+    },
   ];
 
   const navigate = (p, filter) => {
@@ -141,20 +144,22 @@ function AppShell() {
         </div>
 
         <nav className="mobile-nav">
-          <div className="mobile-nav-section">Navegação</div>
-          {mobileNavItems.map((item, idx) => {
-            const isActive = page === item.id && (item.filter == null || item.filter === txFilter);
-            return (
-              <div key={idx} className={`mobile-nav-item ${isActive ? 'active' : ''}`}
-                onClick={() => navigate(item.id, item.filter)}>
-                <span style={{ width: 24, height: 24, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {item.icon}
-                </span>
-                <span style={{ flex: 1 }}>{item.label}</span>
-                {item.badge && <span className="nav-badge">{item.badge}</span>}
-              </div>
-            );
-          })}
+          {mobileNavSections.map(section => (
+            <React.Fragment key={section.title}>
+              <div className="mobile-nav-section">{section.title}</div>
+              {section.items.map(item => (
+                <div key={item.id} className={`mobile-nav-item ${page === item.id ? 'active' : ''}`}
+                  onClick={() => navigate(item.id, null)}>
+                  <span style={{ width: 24, height: 24, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {item.id === 'zack'
+                      ? <ZackAvatar size={22} style={{ borderRadius: '50%' }}/>
+                      : item.icon}
+                  </span>
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                </div>
+              ))}
+            </React.Fragment>
+          ))}
         </nav>
 
         <div className="mobile-sidebar-foot">
