@@ -42,22 +42,127 @@ function SettingsPage() {
   };
 
   const exportData = () => {
-    const data = {
-      exportedAt: new Date().toISOString(),
-      user: { name: user.name, email: user.email },
-      transactions,
-      investments,
-      bills,
-      goals,
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `zack-finance-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    addToast('Dados exportados com sucesso!');
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const blue = [21, 101, 224];
+      const gray = [100, 100, 100];
+      const today = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+      let y = 18;
+
+      // Header
+      doc.setFillColor(...blue);
+      doc.rect(0, 0, 210, 28, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+      doc.text('Zack Finance', 14, 12);
+      doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+      doc.text(`Relatório financeiro gerado em ${today}`, 14, 20);
+      doc.text(`${user.name} · ${user.email}`, 14, 25);
+      y = 36;
+
+      // ── Summary ──
+      doc.setTextColor(...blue); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+      doc.text('Resumo', 14, y); y += 6;
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const thisMonthTxns = transactions.filter(t => t.date.startsWith(currentMonth));
+      const inc  = thisMonthTxns.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+      const exp  = Math.abs(thisMonthTxns.filter(t => t.amount < 0).reduce((s, t) => s + t.amount, 0));
+      const bal  = transactions.reduce((s, t) => s + t.amount, 0);
+      const totInv = investments.reduce((s, i) => s + i.current, 0);
+      doc.autoTable({
+        startY: y,
+        head: [['Item', 'Valor']],
+        body: [
+          ['Saldo total acumulado', fmt.brl(bal)],
+          [`Receitas (${currentMonth})`, fmt.brl(inc)],
+          [`Despesas (${currentMonth})`, fmt.brl(exp)],
+          ['Patrimônio investido', fmt.brl(totInv)],
+        ],
+        styles: { fontSize: 10, cellPadding: 4 },
+        headStyles: { fillColor: blue, textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [240, 246, 255] },
+        margin: { left: 14, right: 14 },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+
+      // ── Transactions ──
+      if (transactions.length > 0) {
+        doc.setTextColor(...blue); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+        doc.text('Transações', 14, y); y += 6;
+        const txRows = [...transactions]
+          .sort((a, b) => b.date.localeCompare(a.date))
+          .slice(0, 50)
+          .map(t => [
+            fmt.dateShort(t.date),
+            t.description,
+            CATEGORIES[t.category]?.label || t.category,
+            (t.amount >= 0 ? '+' : '') + fmt.brl(t.amount),
+          ]);
+        doc.autoTable({
+          startY: y,
+          head: [['Data', 'Descrição', 'Categoria', 'Valor']],
+          body: txRows,
+          styles: { fontSize: 9, cellPadding: 3 },
+          headStyles: { fillColor: blue, textColor: 255 },
+          alternateRowStyles: { fillColor: [248, 250, 255] },
+          columnStyles: { 3: { halign: 'right' } },
+          margin: { left: 14, right: 14 },
+        });
+        y = doc.lastAutoTable.finalY + 10;
+      }
+
+      // ── Bills ──
+      if (bills.length > 0) {
+        if (y > 240) { doc.addPage(); y = 18; }
+        doc.setTextColor(...blue); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+        doc.text('Contas a Pagar', 14, y); y += 6;
+        doc.autoTable({
+          startY: y,
+          head: [['Nome', 'Valor', 'Dia venc.', 'Status']],
+          body: bills.map(b => [b.name, fmt.brl(b.amount), `Dia ${b.dueDay}`, b.status === 'paid' ? 'Pago' : b.status === 'overdue' ? 'Vencido' : 'Pendente']),
+          styles: { fontSize: 9, cellPadding: 3 },
+          headStyles: { fillColor: blue, textColor: 255 },
+          alternateRowStyles: { fillColor: [248, 250, 255] },
+          margin: { left: 14, right: 14 },
+        });
+        y = doc.lastAutoTable.finalY + 10;
+      }
+
+      // ── Investments ──
+      if (investments.length > 0) {
+        if (y > 240) { doc.addPage(); y = 18; }
+        doc.setTextColor(...blue); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+        doc.text('Investimentos', 14, y); y += 6;
+        doc.autoTable({
+          startY: y,
+          head: [['Ativo', 'Tipo', 'Aportado', 'Atual', 'Retorno']],
+          body: investments.map(i => [
+            i.name, i.type, fmt.brl(i.invested), fmt.brl(i.current),
+            (i.returnPct >= 0 ? '+' : '') + i.returnPct.toFixed(2) + '%',
+          ]),
+          styles: { fontSize: 9, cellPadding: 3 },
+          headStyles: { fillColor: blue, textColor: 255 },
+          alternateRowStyles: { fillColor: [248, 250, 255] },
+          margin: { left: 14, right: 14 },
+        });
+      }
+
+      // Footer
+      const pages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i);
+        doc.setTextColor(...gray); doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+        doc.text(`Zack Finance · Página ${i} de ${pages}`, 14, 290);
+        doc.text(today, 196, 290, { align: 'right' });
+      }
+
+      doc.save(`zack-finance-${new Date().toISOString().slice(0, 10)}.pdf`);
+      addToast('PDF exportado com sucesso!');
+    } catch (e) {
+      console.error('[Zack] Export error:', e);
+      addToast('Erro ao gerar PDF. Tente novamente.', 'error');
+    }
   };
 
   const Toggle = ({ value, onChange }) => (
