@@ -35,7 +35,7 @@ function ZackAvatar({ size = 36, style = {}, className = '' }) {
 // ─── App Shell ────────────────────────────────────────────────────────────────
 function AppShell() {
   const {
-    authed, authLoading, user, toggleTheme, theme, logout,
+    authed, authLoading, user, profilePhoto, toggleTheme, theme, logout,
     income, expenses, alerts,
   } = useApp();
 
@@ -172,7 +172,10 @@ function AppShell() {
         </nav>
 
         <div className="mobile-sidebar-foot">
-          <div className="avatar" style={{ width: 42, height: 42, fontSize: 14 }}>{user.initials}</div>
+          {profilePhoto
+            ? <img src={profilePhoto} alt="Foto" style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}/>
+            : <div className="avatar" style={{ width: 42, height: 42, fontSize: 14 }}>{user.initials}</div>
+          }
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user.name}
@@ -248,7 +251,10 @@ function AppShell() {
         </nav>
 
         <div className="sidebar-foot">
-          <div className="avatar">{user.initials}</div>
+          {profilePhoto
+            ? <img src={profilePhoto} alt="Foto" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}/>
+            : <div className="avatar">{user.initials}</div>
+          }
           <div className="sidebar-foot-text" style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 600, fontSize: 13.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user.name}
@@ -319,7 +325,10 @@ function AppShell() {
 
             <div style={{ width: 1, height: 24, background: 'var(--line)', margin: '0 2px' }}/>
             <button className="icon-btn" onClick={() => navigate('settings', null)} title="Perfil">
-              <div className="avatar" style={{ width: 30, height: 30, fontSize: 11 }}>{user.initials}</div>
+              {profilePhoto
+                ? <img src={profilePhoto} alt="Foto" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover' }}/>
+                : <div className="avatar" style={{ width: 30, height: 30, fontSize: 11 }}>{user.initials}</div>
+              }
             </button>
           </div>
         </header>

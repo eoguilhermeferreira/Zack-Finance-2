@@ -1,7 +1,8 @@
 function SettingsPage() {
-  const { user, theme, toggleTheme, logout, addToast, transactions, investments, bills, goals } = useApp();
+  const { user, profilePhoto, setProfilePhoto, theme, toggleTheme, logout, addToast, transactions, investments, bills, goals } = useApp();
   const [name, setName]       = React.useState(user.name);
   const [email, setEmail]     = React.useState(user.email);
+  const photoInputRef = React.useRef(null);
   const [saved, setSaved]     = React.useState(false);
   const [currency, setCurrency] = React.useState('BRL');
   const [showLogout, setShowLogout] = React.useState(false);
@@ -20,6 +21,19 @@ function SettingsPage() {
     addToast('Perfil salvo com sucesso!');
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handlePhotoChange = e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { addToast('Selecione uma imagem válida.', 'error'); return; }
+    if (file.size > 5 * 1024 * 1024) { addToast('Imagem muito grande. Máximo 5MB.', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      setProfilePhoto(ev.target.result);
+      addToast('Foto atualizada!');
+    };
+    reader.readAsDataURL(file);
   };
 
   const toggleNotif = async key => {
@@ -207,18 +221,26 @@ function SettingsPage() {
 
       {/* Profile */}
       <Section title="Perfil">
+        <input ref={photoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange}/>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-          <div className="avatar" style={{ width: 56, height: 56, fontSize: 18, borderRadius: '50%', flexShrink: 0 }}>
-            {user.initials}
-          </div>
+          {profilePhoto
+            ? <img src={profilePhoto} alt="Foto" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--line)' }}/>
+            : <div className="avatar" style={{ width: 56, height: 56, fontSize: 18, borderRadius: '50%', flexShrink: 0 }}>{user.initials}</div>
+          }
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 700, fontSize: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
             <div style={{ color: 'var(--text-2)', fontSize: 13.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
           </div>
-          <button className="btn btn-sm" style={{ flexShrink: 0 }}
-            onClick={() => addToast('Foto de perfil em breve!', 'warning')}>
-            <IcoUpload size={14}/>Foto
-          </button>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <button className="btn btn-sm" onClick={() => photoInputRef.current?.click()}>
+              <IcoUpload size={14}/>Foto
+            </button>
+            {profilePhoto && (
+              <button className="btn btn-sm btn-ghost" onClick={() => { setProfilePhoto(null); addToast('Foto removida.', 'error'); }}>
+                <IcoX size={14}/>
+              </button>
+            )}
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 16 }}>

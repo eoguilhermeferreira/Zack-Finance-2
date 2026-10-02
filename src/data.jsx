@@ -124,6 +124,7 @@ function AppProvider({ children }) {
   const [bills,        setBills]        = React.useState([]);
   const [goals,        setGoals]        = React.useState([]);
   const [user,  setUser]  = React.useState({ name: 'Usuário', email: '', initials: 'ZF' });
+  const [profilePhoto, setProfilePhotoState] = React.useState(() => localStorage.getItem('zf-profile-photo') || null);
   const [toasts, setToasts] = React.useState([]);
 
   React.useEffect(() => {
@@ -178,6 +179,12 @@ function AppProvider({ children }) {
       return { error: null, confirmEmail: true };
     }
     return { error: null };
+  };
+
+  const setProfilePhoto = (dataUrl) => {
+    setProfilePhotoState(dataUrl);
+    if (dataUrl) localStorage.setItem('zf-profile-photo', dataUrl);
+    else localStorage.removeItem('zf-profile-photo');
   };
 
   const logout = async () => {
@@ -294,7 +301,7 @@ function AppProvider({ children }) {
     <AppContext.Provider value={{
       authed, authLoading, login, register, logout,
       theme, toggleTheme,
-      user, toasts, addToast,
+      user, profilePhoto, setProfilePhoto, toasts, addToast,
       transactions, addTransaction, editTransaction, deleteTransaction,
       investments, bills, updateBill, addBill, deleteBill,
       goals, addGoal, editGoal, deleteGoal,
