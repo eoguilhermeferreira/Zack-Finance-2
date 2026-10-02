@@ -40,15 +40,44 @@ function DashboardPage({ onNavigate }) {
     .map(([cat, val]) => ({ label: CATEGORIES[cat]?.label || cat, value: val, color: CATEGORIES[cat]?.color || '#ccc' }))
     .sort((a, b) => b.value - a.value).slice(0, 5);
 
-  const sparkIncome  = [8200, 8500, 8500, 10138, 10842, income];
-  const sparkExpense = [5120, 5551, 5847, 5854, 5252, expenses];
-  const sparkBalance = [18200, 20400, 22000, 24500, 26100, balance];
+  // Build sparklines from real monthlyData (last 6 months)
+  const sparkIncome  = monthlyData.map(d => d.income);
+  const sparkExpense = monthlyData.map(d => d.expense);
+  // Balance sparkline: cumulative sum per month
+  const sparkBalance = React.useMemo(() => {
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(1);
+      d.setMonth(d.getMonth() - i);
+      const key = d.toISOString().slice(0, 7);
+      const upToMonth = transactions.filter(t => t.date <= key + '-31');
+      months.push(upToMonth.reduce((s, t) => s + t.amount, 0));
+    }
+    return months;
+  }, [transactions]);
+
+  // Previous month values for real deltas
+  const prevMonth = monthlyData.length >= 2 ? monthlyData[monthlyData.length - 2] : null;
+  const prevIncome   = prevMonth?.income   || 0;
+  const prevExpenses = prevMonth?.expense  || 0;
+  const prevSavings  = prevIncome > 0 ? Math.round((prevIncome - prevExpenses) / prevIncome * 100) : 0;
+
+  const incomeDelta   = income   - prevIncome;
+  const expensesDelta = expenses - prevExpenses;
+  const savingsDelta  = savingsRate - prevSavings;
+
+  const fmtDelta = (v, invert = false) => {
+    if (v === 0) return '—';
+    const up = invert ? v <= 0 : v >= 0;
+    return (v >= 0 ? '+' : '') + fmt.brl(Math.abs(v));
+  };
 
   const statCards = [
-    { label: 'Saldo Total',      value: fmt.brl(balance),    icon: <IcoWallet size={18} style={{ color: '#1565E0' }}/>,          iconBg: '#dbeafe', delta: '+R$ 2.180', deltaUp: true,  sub: 'vs. mês anterior', spark: sparkBalance,  sparkColor: '#1565E0' },
-    { label: `Receitas ${currentMonthLabel}.`, value: fmt.brl(income),   icon: <IcoArrowUpRight size={18} style={{ color: '#1F8A4C' }}/>, iconBg: '#dcfce7', delta: '+R$ 1.458', deltaUp: true, sub: `vs. ${prevMonthLabel}`, spark: sparkIncome,  sparkColor: '#2DB36A' },
-    { label: `Despesas ${currentMonthLabel}.`, value: fmt.brl(expenses), icon: <IcoArrowDown size={18} style={{ color: '#E5484D' }}/>,   iconBg: '#fee2e2', delta: '-R$ 2.059', deltaUp: true, sub: `vs. ${prevMonthLabel}`, spark: sparkExpense, sparkColor: '#E5484D' },
-    { label: 'Taxa de Poupança', value: savingsRate + '%',   icon: <IcoPiggyBank size={18} style={{ color: '#7C5CE0' }}/>,       iconBg: '#ede9fe', delta: '+8%',       deltaUp: true,  sub: `vs. ${prevMonthLabel}`, spark: [32,30,35,38,40,savingsRate], sparkColor: '#7C5CE0' },
+    { label: 'Saldo Total',      value: fmt.brl(balance),    icon: <IcoWallet size={18} style={{ color: '#1565E0' }}/>,          iconBg: '#dbeafe', delta: balance === 0 ? '—' : fmt.brl(balance), deltaUp: balance >= 0, sub: 'saldo acumulado', spark: sparkBalance,  sparkColor: '#1565E0' },
+    { label: `Receitas ${currentMonthLabel}.`, value: fmt.brl(income),   icon: <IcoArrowUpRight size={18} style={{ color: '#1F8A4C' }}/>, iconBg: '#dcfce7', delta: fmtDelta(incomeDelta),   deltaUp: incomeDelta >= 0,   sub: `vs. ${prevMonthLabel}`, spark: sparkIncome,  sparkColor: '#2DB36A' },
+    { label: `Despesas ${currentMonthLabel}.`, value: fmt.brl(expenses), icon: <IcoArrowDown size={18} style={{ color: '#E5484D' }}/>,   iconBg: '#fee2e2', delta: fmtDelta(expensesDelta, true), deltaUp: expensesDelta <= 0, sub: `vs. ${prevMonthLabel}`, spark: sparkExpense, sparkColor: '#E5484D' },
+    { label: 'Taxa de Poupança', value: savingsRate + '%',   icon: <IcoPiggyBank size={18} style={{ color: '#7C5CE0' }}/>,       iconBg: '#ede9fe', delta: savingsDelta === 0 ? '—' : (savingsDelta > 0 ? '+' : '') + savingsDelta + '%', deltaUp: savingsDelta >= 0, sub: `vs. ${prevMonthLabel}`, spark: monthlyData.map(d => d.income > 0 ? Math.round((d.income - d.expense) / d.income * 100) : 0), sparkColor: '#7C5CE0' },
   ];
 
   // Top alert for dashboard banner
