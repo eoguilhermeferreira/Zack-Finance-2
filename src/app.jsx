@@ -75,6 +75,11 @@ function AppShell() {
     { id: 'goals',        label: 'Metas',            icon: <IcoTarget size={20}/> },
   ];
 
+  const accountNavItems = [
+    { id: 'plans',    label: 'Planos',        icon: <IcoShield size={20}/> },
+    { id: 'settings', label: 'Configurações', icon: <IcoSettings size={20}/> },
+  ];
+
   const mobileNavSections = [
     {
       title: 'Principal',
@@ -86,7 +91,7 @@ function AppShell() {
     },
     {
       title: 'Conta',
-      items: [{ id: 'settings', label: 'Configurações', icon: <IcoSettings size={22}/> }],
+      items: accountNavItems.map(item => ({ ...item, icon: React.cloneElement(item.icon, { size: 22 }) })),
     },
   ];
 
@@ -106,6 +111,7 @@ function AppShell() {
       case 'reports':      return <ReportsPage/>;
       case 'goals':        return <GoalsPage/>;
       case 'zack':         return <ZackPage/>;
+      case 'plans':        return <PlansPage/>;
       case 'settings':     return <SettingsPage/>;
       default:             return <DashboardPage onNavigate={navigate}/>;
     }
@@ -114,7 +120,7 @@ function AppShell() {
   const pageLabels = {
     dashboard: 'Dashboard', transactions: 'Transações', investments: 'Investimentos',
     bills: 'Contas a Pagar', reports: 'Relatórios', goals: 'Metas',
-    zack: 'Zack AI', settings: 'Configurações',
+    zack: 'Zack AI', plans: 'Planos', settings: 'Configurações',
   };
 
   const notifTypeStyle = type => ({
@@ -211,10 +217,13 @@ function AppShell() {
           </div>
 
           <div className="nav-section">Conta</div>
-          <div className={`nav-item ${page === 'settings' ? 'active' : ''}`} onClick={() => navigate('settings', null)}>
-            <span className="nav-icon"><IcoSettings size={20}/></span>
-            <span>Configurações</span>
-          </div>
+          {accountNavItems.map(item => (
+            <div key={item.id} className={`nav-item ${page === item.id ? 'active' : ''}`}
+              onClick={() => navigate(item.id, null)}>
+              <span className="nav-icon">{item.icon}</span>
+              <span>{item.label}</span>
+            </div>
+          ))}
 
           {!collapsed && (
             <div style={{ marginTop: 16, padding: '14px', background: 'var(--bg-2)', borderRadius: 12, border: '1px solid var(--line)' }}>

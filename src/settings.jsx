@@ -144,24 +144,8 @@ function SettingsPage() {
         ))}
       </Section>
 
-      {/* Plan */}
-      <Section title="Plano e Segurança">
-        <div style={{ background: 'linear-gradient(135deg, var(--brand-blue), var(--brand-blue-deep))', borderRadius: 12, padding: 20, color: '#fff', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <IcoShield size={20}/>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 16 }}>Plano Pro</div>
-              <div style={{ opacity: .7, fontSize: 13 }}>Todos os recursos desbloqueados</div>
-            </div>
-            <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,.2)', padding: '4px 10px', borderRadius: 99, fontSize: 12, fontWeight: 700 }}>ATIVO</span>
-          </div>
-          <div style={{ display: 'flex', gap: 16, fontSize: 13, opacity: .85 }}>
-            <span>✓ IA ilimitada</span>
-            <span>✓ Relatórios avançados</span>
-            <span>✓ Múltiplas contas</span>
-          </div>
-        </div>
-
+      {/* Security */}
+      <Section title="Segurança">
         <Row label="Autenticação 2 fatores" sub="Adicione uma camada extra de segurança"
           right={<Toggle value={false} onChange={() => addToast('Em breve disponível!', 'warning')}/>}/>
         <Row label="Sessões ativas" sub="1 sessão ativa" right={
@@ -171,20 +155,12 @@ function SettingsPage() {
           right={<button className="btn btn-sm"><IcoDownload size={13}/>Exportar</button>}/>
       </Section>
 
-      {/* Danger zone */}
-      <div className="card" style={{ padding: 24, marginBottom: 16, borderColor: '#fecaca' }}>
-        <h3 style={{ fontSize: 15.5, fontWeight: 700, marginBottom: 16, color: 'var(--brand-red)' }}>Zona de Perigo</h3>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <button className="btn btn-sm btn-danger" onClick={() => setShowLogout(true)}>
-            <IcoLogOut size={14}/>Sair da conta
-          </button>
-          <button className="btn btn-sm btn-danger" onClick={() => addToast('Dados limpos.', 'error')}>
-            <IcoTrash size={14}/>Limpar dados de demonstração
-          </button>
-          <button className="btn btn-sm btn-danger" onClick={() => addToast('Entre em contato com o suporte.', 'warning')}>
-            <IcoX size={14}/>Excluir conta
-          </button>
-        </div>
+      {/* Sign out */}
+      <div style={{ paddingBottom: 32 }}>
+        <button className="btn btn-sm btn-ghost" style={{ color: 'var(--text-3)', fontSize: 13 }}
+          onClick={() => setShowLogout(true)}>
+          <IcoLogOut size={14}/>Sair da conta
+        </button>
       </div>
 
       <ConfirmDialog
