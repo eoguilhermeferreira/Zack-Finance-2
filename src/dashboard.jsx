@@ -110,10 +110,18 @@ function DashboardPage({ onNavigate }) {
             <strong>{topAlert.title}:</strong> {topAlert.msg}
           </div>
           <button
-            onClick={() => onNavigate('goals')}
+            onClick={() => {
+              const dest = topAlert.id?.startsWith('bill') ? 'bills'
+                         : topAlert.id?.startsWith('goal') ? 'goals'
+                         : topAlert.id?.startsWith('cat') || topAlert.id === 'high-spend' || topAlert.id === 'yesterday' ? 'transactions'
+                         : 'dashboard';
+              onNavigate(dest);
+            }}
             style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer',
               color: 'inherit', fontWeight: 700, fontSize: 12.5, whiteSpace: 'nowrap', flexShrink: 0 }}>
-            Ver metas →
+            {topAlert.id?.startsWith('bill') ? 'Ver contas →'
+             : topAlert.id?.startsWith('goal') ? 'Ver metas →'
+             : 'Ver mais →'}
           </button>
         </div>
       )}
