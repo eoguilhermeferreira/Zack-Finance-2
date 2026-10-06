@@ -311,9 +311,17 @@ function AppShell() {
                     <div className="notif-empty">Sem alertas 🎉<br/><span style={{ fontSize: 12 }}>Suas finanças estão em dia!</span></div>
                   ) : alerts.map(a => {
                     const s = notifTypeStyle(a.type);
+                    const dest = a.id?.startsWith('bill') ? 'bills'
+                               : a.id?.startsWith('goal') ? 'goals'
+                               : a.id?.startsWith('cat') || a.id === 'high-spend' || a.id === 'yesterday' ? 'transactions'
+                               : null;
                     return (
-                      <div key={a.id} className="notif-item">
-                        <div className="notif-icon" style={{ background: s.bg, color: s.color, fontSize: 17 }}>{a.emoji}</div>
+                      <div key={a.id} className="notif-item"
+                        onClick={() => dest && navigate(dest, null)}
+                        style={{ cursor: dest ? 'pointer' : 'default' }}>
+                        <div className="notif-icon" style={{ background: s.bg, color: s.color }}>
+                          {a.type === 'error' ? <IcoAlertTriangle size={16}/> : a.type === 'warning' ? <IcoAlertCircle size={16}/> : <IcoInfo size={16}/>}
+                        </div>
                         <div className="notif-text">
                           <div className="notif-title" style={{ color: s.color }}>{a.title}</div>
                           <div className="notif-msg">{a.msg}</div>
