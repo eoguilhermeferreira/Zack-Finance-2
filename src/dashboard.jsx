@@ -120,7 +120,11 @@ function DashboardPage({ onNavigate }) {
       {/* Smart alert banner */}
       {topAlert && (
         <div className={`alert-banner ${topAlert.type}`}>
-          <span style={{ fontSize: 20, flexShrink: 0 }}>{topAlert.emoji}</span>
+          <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+            {topAlert.type === 'error'
+              ? <IcoAlertTriangle size={18}/>
+              : <IcoAlertCircle size={18}/>}
+          </span>
           <div>
             <strong>{topAlert.title}:</strong> {topAlert.msg}
           </div>

@@ -102,8 +102,8 @@ function generateAlerts(transactions, bills, goals, income, expenses) {
         title: `${b.name} está vencida!`,
         msg: `Conta de ${fmt.brl(b.amount)} está em atraso. Regularize o quanto antes.` });
     } else if (daysUntil >= 0 && daysUntil <= 4) {
-      alerts.push({ id: `bill-${b.id}`, type: 'warning', emoji: '📆',
-        title: `${b.name} vence em ${daysUntil === 0 ? 'hoje' : daysUntil + ' dia(s)'}`,
+      alerts.push({ id: `bill-${b.id}`, type: daysUntil === 0 ? 'error' : 'warning', emoji: daysUntil === 0 ? '🚨' : '📆',
+        title: `${b.name} vence ${daysUntil === 0 ? 'hoje' : 'em ' + daysUntil + ' dia(s)'}`,
         msg: `Valor: ${fmt.brl(b.amount)}. Não esqueça de pagar!` });
     }
   });
