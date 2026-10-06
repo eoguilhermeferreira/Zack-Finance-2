@@ -100,8 +100,16 @@ img { max-width: 100%; display: block; }
   background:linear-gradient(180deg,var(--brand-blue),var(--brand-blue-deep));
   color:#fff; border-color:transparent;
   box-shadow:0 5px 14px -6px var(--brand-blue), inset 0 1px 0 rgba(255,255,255,.18);
+  transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
-.btn-primary:hover { filter:brightness(1.07); }
+.btn-primary:hover {
+  background:linear-gradient(180deg,var(--brand-blue),var(--brand-blue-deep));
+  border-color:transparent;
+  filter:brightness(1.1);
+  transform:translateY(-2px);
+  box-shadow:0 10px 20px -6px var(--brand-blue), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.btn-primary:active { transform:translateY(0); filter:brightness(.97); }
 .btn-ghost  { background:transparent; border-color:transparent; }
 .btn-ghost:hover { background:var(--bg-2); }
 .btn-danger { color:var(--brand-red); }
