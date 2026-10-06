@@ -48,7 +48,8 @@ function AppShell() {
   const [showNotifs, setShowNotifs] = React.useState(false);
   const [txFilter,   setTxFilter]   = React.useState(null);
 
-  const notifRef = React.useRef(null);
+  const notifRef   = React.useRef(null);
+  const scrollRef  = React.useRef(null);
 
   React.useEffect(() => {
     const h = e => { if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotifs(false); };
@@ -103,6 +104,7 @@ function AppShell() {
     if (filter !== undefined) setTxFilter(filter);
     setMobileOpen(false);
     setShowNotifs(false);
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
   };
 
   const currentPage = () => {
@@ -333,7 +335,7 @@ function AppShell() {
           </div>
         </header>
 
-        <div style={{ flex: 1, overflow: 'auto', overflowX: 'hidden', position: 'relative' }}>
+        <div ref={scrollRef} style={{ flex: 1, overflow: 'auto', overflowX: 'hidden', position: 'relative' }}>
           {currentPage()}
           {/* FAB inside scroll container so modals (z-index:200) render above it (z-index:70) */}
           {page !== 'zack' && (
