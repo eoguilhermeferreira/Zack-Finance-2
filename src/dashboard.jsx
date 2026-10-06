@@ -80,8 +80,23 @@ function DashboardPage({ onNavigate }) {
     { label: 'Taxa de Poupança', value: savingsRate + '%',   icon: <IcoPiggyBank size={18} style={{ color: '#7C5CE0' }}/>,       iconBg: '#ede9fe', delta: savingsDelta === 0 ? '—' : (savingsDelta > 0 ? '+' : '') + savingsDelta + '%', deltaUp: savingsDelta >= 0, sub: `vs. ${prevMonthLabel}`, spark: monthlyData.map(d => d.income > 0 ? Math.round((d.income - d.expense) / d.income * 100) : 0), sparkColor: '#7C5CE0' },
   ];
 
-  // Top alert for dashboard banner
-  const topAlert = alerts.find(a => a.type === 'error') || alerts.find(a => a.type === 'warning');
+  // Top alert for dashboard banner — group bill alerts of the same urgency
+  const billAlerts = alerts.filter(a => a.id?.startsWith('bill'));
+  const otherAlert = alerts.find(a => !a.id?.startsWith('bill') && (a.type === 'error' || a.type === 'warning'));
+  const topAlert = (() => {
+    if (billAlerts.length === 0) return otherAlert || null;
+    if (billAlerts.length === 1) return billAlerts[0];
+    // Multiple bills: merge into one banner
+    const hasOverdue = billAlerts.some(a => a.type === 'error');
+    const names = billAlerts.map(a => a.title.replace(' está vencida!', '').replace(/ vence em .*/, '')).join(', ');
+    return {
+      id: 'bill-multi',
+      type: hasOverdue ? 'error' : 'warning',
+      emoji: hasOverdue ? '🚨' : '📆',
+      title: `${billAlerts.length} contas precisam de atenção`,
+      msg: names,
+    };
+  })();
 
   // Goals summary for widget
   const currentSavings = Math.max(0, income - expenses);
