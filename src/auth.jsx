@@ -1,13 +1,14 @@
 function AuthPage() {
   const { login, register, supabaseActive } = useApp();
-  const [mode,     setMode]     = React.useState('login');
-  const [name,     setName]     = React.useState('');
-  const [email,    setEmail]    = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [showPass, setShowPass] = React.useState(false);
-  const [error,    setError]    = React.useState('');
-  const [info,     setInfo]     = React.useState('');
-  const [loading,  setLoading]  = React.useState(false);
+  const [mode,         setMode]         = React.useState('login');
+  const [name,         setName]         = React.useState('');
+  const [email,        setEmail]        = React.useState('');
+  const [password,     setPassword]     = React.useState('');
+  const [showPass,     setShowPass]     = React.useState(false);
+  const [error,        setError]        = React.useState('');
+  const [info,         setInfo]         = React.useState('');
+  const [loading,      setLoading]      = React.useState(false);
+  const [waitingEmail, setWaitingEmail] = React.useState(false);
 
   const switchMode = m => { setMode(m); setError(''); setInfo(''); };
 
@@ -25,12 +26,34 @@ function AuthPage() {
       } else {
         const { error: err, confirmEmail } = await register(email, password, name.trim());
         if (err) { setError(err); }
-        else if (confirmEmail) { setInfo('Conta criada! Verifique seu e-mail para confirmar antes de entrar.'); setMode('login'); }
+        else if (confirmEmail) { setWaitingEmail(true); }
       }
     } finally {
       setLoading(false);
     }
   };
+
+  if (waitingEmail) return (
+    <div className="auth-shell" style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
+      <div style={{ textAlign: 'center', maxWidth: 400, padding: 32 }}>
+        <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#dbeafe', display: 'grid', placeItems: 'center', margin: '0 auto 24px' }}>
+          <IcoBell size={32} style={{ color: 'var(--brand-blue)' }}/>
+        </div>
+        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Verifique seu e-mail</h2>
+        <p style={{ color: 'var(--text-2)', fontSize: 15, lineHeight: 1.7, marginBottom: 28 }}>
+          Enviamos um link de confirmação para <strong>{email}</strong>.<br/>
+          Clique no link e você entrará automaticamente no Zack Finance.
+        </p>
+        <p style={{ color: 'var(--text-3)', fontSize: 13 }}>
+          Não recebeu? Verifique o spam ou{' '}
+          <button onClick={() => setWaitingEmail(false)}
+            style={{ background: 'none', border: 'none', color: 'var(--brand-blue)', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>
+            tente novamente
+          </button>.
+        </p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="auth-shell">

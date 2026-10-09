@@ -132,18 +132,33 @@ function AppProvider({ children }) {
     localStorage.setItem('zf-theme', theme);
   }, [theme]);
 
-  // Restore session on mount
+  // Restore session on mount + listen for auth state changes (email confirmation redirect)
   React.useEffect(() => {
     if (!supabaseEnabled) { setAuthLoading(false); return; }
-    supaGetUser().then(u => {
-      if (u) {
-        const nm = u.user_metadata?.full_name || u.email?.split('@')[0] || 'Usuário';
-        setUser({ name: nm, email: u.email, initials: nm.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() });
-        setAuthed(true);
-        _syncFromSupabase(setTransactions, setInvestments, setBills, setGoals);
+
+    const applyUser = (u) => {
+      if (!u) return;
+      const nm = u.user_metadata?.full_name || u.email?.split('@')[0] || 'Usuário';
+      setUser({ name: nm, email: u.email, initials: nm.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() });
+      setAuthed(true);
+      _syncFromSupabase(setTransactions, setInvestments, setBills, setGoals);
+    };
+
+    supaGetUser().then(u => { applyUser(u); setAuthLoading(false); });
+
+    const unsub = supaOnAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        applyUser(session.user);
+        setAuthLoading(false);
       }
-      setAuthLoading(false);
+      if (event === 'SIGNED_OUT') {
+        setAuthed(false);
+        setTransactions([]); setInvestments([]); setBills([]); setGoals([]);
+        setUser({ name: 'Usuário', email: '', initials: 'ZF' });
+      }
     });
+
+    return unsub;
   }, []);
 
   const toggleTheme = () => setThemeState(t => t === 'light' ? 'dark' : 'light');

@@ -37,6 +37,14 @@ async function supaGetUser() {
   return session?.user || null;
 }
 
+function supaOnAuthStateChange(callback) {
+  if (!_supa) return () => {};
+  const { data: { subscription } } = _supa.auth.onAuthStateChange((event, session) => {
+    callback(event, session);
+  });
+  return () => subscription.unsubscribe();
+}
+
 // ─── Data helpers ─────────────────────────────────────────────────────────────
 
 async function _uid() {
