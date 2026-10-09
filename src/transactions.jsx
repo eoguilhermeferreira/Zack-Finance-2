@@ -129,9 +129,12 @@ function TransactionsPage() {
                   {paginated.map(t => (
                     <tr key={t.id}>
                       <td className="mobile-hide" style={{ color: 'var(--text-2)', whiteSpace: 'nowrap', fontSize: 13 }}>{fmt.date(t.date)}</td>
-                      <td>
-                        <div style={{ fontWeight: 500 }}>{t.description}</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{fmt.dateShort(t.date)}<span className="mobile-hide"> · {ACCOUNTS.find(a => a.id === t.account)?.label}</span></div>
+                      <td style={{ maxWidth: 0, width: '99%' }}>
+                        <div style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.description}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {fmt.dateShort(t.date)}<span className="mobile-hide"> · {ACCOUNTS.find(a => a.id === t.account)?.label}</span>
+                          {t.notes ? <span> · {t.notes}</span> : null}
+                        </div>
                       </td>
                       <td className="mobile-hide"><CatPill category={t.category}/></td>
                       <td className="mobile-hide" style={{ color: 'var(--text-2)', fontSize: 13 }}>{ACCOUNTS.find(a => a.id === t.account)?.label}</td>

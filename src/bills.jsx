@@ -1,5 +1,5 @@
 function BillsPage() {
-  const { bills, updateBill, addBill, deleteBill, addToast } = useApp();
+  const { bills, updateBill, addBill, deleteBill, addToast, addTransaction } = useApp();
   const [confirmDelete, setConfirmDelete] = React.useState(null);
 
   // Month selector
@@ -63,8 +63,21 @@ function BillsPage() {
   const totalPending = [...pending, ...overdue].reduce((s, b) => s + b.amount, 0);
 
   const markPaid = id => {
+    const bill = bills.find(b => b.id === id);
     updateBill(id, { status: 'paid' });
-    addToast('Conta marcada como paga!');
+    if (bill) {
+      const today2 = new Date();
+      const dateStr = today2.toISOString().slice(0, 10);
+      addTransaction({
+        description: bill.name,
+        amount: -Math.abs(bill.amount),
+        date: dateStr,
+        category: bill.category || 'utilities',
+        account: 'checking',
+        notes: 'Pagamento automático via Contas a Pagar',
+      });
+    }
+    addToast('Conta paga e despesa registrada!');
   };
 
   // Add modal state
