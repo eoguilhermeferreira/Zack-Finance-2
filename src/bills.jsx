@@ -103,15 +103,22 @@ function BillsPage() {
       ? `Avulsa — dia ${bill.dueDay}`
       : `Recorrente — todo dia ${bill.dueDay}`;
 
+    const isCurrentMonth = selectedMonth === today.toISOString().slice(0, 7);
+    const isOverdueUnpaid = bill.status === 'pending' && isCurrentMonth && bill.dueDay < today.getDate();
+
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid var(--line-2)' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        padding: '14px 0', borderBottom: '1px solid var(--line-2)',
+        ...(isOverdueUnpaid ? { background: 'rgba(229,72,77,.06)', margin: '0 -20px', padding: '14px 20px', borderBottom: '1px solid rgba(229,72,77,.15)' } : {}),
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: CATEGORIES[bill.category]?.bg || 'var(--bg-2)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-            <IcoReceipt size={18} style={{ color: CATEGORIES[bill.category]?.color || 'var(--text-2)' }}/>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: isOverdueUnpaid ? '#fee2e2' : (CATEGORIES[bill.category]?.bg || 'var(--bg-2)'), display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+            <IcoReceipt size={18} style={{ color: isOverdueUnpaid ? 'var(--brand-red)' : (CATEGORIES[bill.category]?.color || 'var(--text-2)') }}/>
           </div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: 14 }}>{bill.name}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{subLabel}</div>
+            <div style={{ fontWeight: 600, fontSize: 14, color: isOverdueUnpaid ? 'var(--brand-red)' : 'var(--text)' }}>{bill.name}</div>
+            <div style={{ fontSize: 12, color: isOverdueUnpaid ? '#ef4444' : 'var(--text-3)', marginTop: 2 }}>{subLabel}{isOverdueUnpaid ? ' · vencida' : ''}</div>
             <span style={{ fontSize: 10, fontWeight: 700, color: typeColor(bill.type), background: 'var(--bg-2)', padding: '1px 6px', borderRadius: 99, marginTop: 3, display: 'inline-block' }}>
               {typeLabel(bill.type || 'recorrente')}
             </span>
