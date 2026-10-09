@@ -65,7 +65,9 @@ async function loadTransactions() {
 
 async function deleteTransactionRemote(id) {
   if (!_supa) return;
-  await _supa.from('transactions').delete().eq('id', id);
+  const uid = await _uid();
+  if (!uid) return;
+  await _supa.from('transactions').delete().eq('id', id).eq('user_id', uid);
 }
 
 async function saveInvestment(inv) {
@@ -143,12 +145,16 @@ async function loadGoals() {
 
 async function deleteBillRemote(id) {
   if (!_supa) return;
-  await _supa.from('bills').delete().eq('id', id);
+  const uid = await _uid();
+  if (!uid) return;
+  await _supa.from('bills').delete().eq('id', id).eq('user_id', uid);
 }
 
 async function deleteGoalRemote(id) {
   if (!_supa) return;
-  await _supa.from('goals').delete().eq('id', id);
+  const uid = await _uid();
+  if (!uid) return;
+  await _supa.from('goals').delete().eq('id', id).eq('user_id', uid);
 }
 
 async function saveChatMessage(msg) {
