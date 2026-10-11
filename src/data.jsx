@@ -94,14 +94,14 @@ function generateAlerts(transactions, bills, goals, income, expenses) {
     }
   }
 
-  // Bills due soon or overdue
-  bills.filter(b => b.status === 'pending' || b.status === 'overdue').forEach(b => {
+  // Bills due soon or overdue (only unpaid this month)
+  bills.filter(b => !(b.paidMonths || []).includes(currentMonth)).forEach(b => {
     const daysUntil = b.dueDay - dayOfMonth;
-    if (b.status === 'overdue') {
+    if (daysUntil < 0) {
       alerts.push({ id: `bill-ov-${b.id}`, type: 'error', emoji: '🚨',
         title: `${b.name} está vencida!`,
         msg: `Conta de ${fmt.brl(b.amount)} está em atraso. Regularize o quanto antes.` });
-    } else if (daysUntil >= 0 && daysUntil <= 4) {
+    } else if (daysUntil <= 4) {
       alerts.push({ id: `bill-${b.id}`, type: daysUntil === 0 ? 'error' : 'warning', emoji: daysUntil === 0 ? '🚨' : '📆',
         title: `${b.name} vence ${daysUntil === 0 ? 'hoje' : 'em ' + daysUntil + ' dia(s)'}`,
         msg: `Valor: ${fmt.brl(b.amount)}. Não esqueça de pagar!` });

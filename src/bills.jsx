@@ -53,10 +53,17 @@ function BillsPage() {
     return monthDiff(b.startMonth, selectedMonth) + 1;
   };
 
+  const getBillStatus = b => {
+    if ((b.paidMonths || []).includes(selectedMonth)) return 'paid';
+    const isCurrentMonth = selectedMonth === today.toISOString().slice(0, 7);
+    if (isCurrentMonth && b.dueDay < today.getDate()) return 'overdue';
+    return 'pending';
+  };
+
   const sortByDay = arr => [...arr].sort((a, b) => (a.dueDay || 0) - (b.dueDay || 0));
-  const paid    = sortByDay(visibleBills.filter(b => b.status === 'paid'));
-  const pending = sortByDay(visibleBills.filter(b => b.status === 'pending'));
-  const overdue = sortByDay(visibleBills.filter(b => b.status === 'overdue'));
+  const paid    = sortByDay(visibleBills.filter(b => getBillStatus(b) === 'paid'));
+  const pending = sortByDay(visibleBills.filter(b => getBillStatus(b) === 'pending'));
+  const overdue = sortByDay(visibleBills.filter(b => getBillStatus(b) === 'overdue'));
 
   const totalMonthly = visibleBills.reduce((s, b) => s + b.amount, 0);
   const totalPaid    = paid.reduce((s, b) => s + b.amount, 0);
@@ -64,19 +71,19 @@ function BillsPage() {
 
   const markPaid = id => {
     const bill = bills.find(b => b.id === id);
-    updateBill(id, { status: 'paid' });
-    if (bill) {
-      const today2 = new Date();
-      const dateStr = today2.toISOString().slice(0, 10);
-      addTransaction({
-        description: bill.name,
-        amount: -Math.abs(bill.amount),
-        date: dateStr,
-        category: bill.category || 'utilities',
-        account: 'checking',
-        notes: 'Pagamento automático via Contas a Pagar',
-      });
-    }
+    if (!bill) return;
+    const paidMonths = [...(bill.paidMonths || [])];
+    if (!paidMonths.includes(selectedMonth)) paidMonths.push(selectedMonth);
+    updateBill(id, { paidMonths });
+    const today2 = new Date();
+    addTransaction({
+      description: bill.name,
+      amount: -Math.abs(bill.amount),
+      date: today2.toISOString().slice(0, 10),
+      category: bill.category || 'utilities',
+      account: 'checking',
+      notes: 'Pagamento automático via Contas a Pagar',
+    });
     addToast('Conta paga e despesa registrada!');
   };
 
@@ -116,8 +123,8 @@ function BillsPage() {
       ? `Avulsa — dia ${bill.dueDay}`
       : `Recorrente — todo dia ${bill.dueDay}`;
 
-    const isCurrentMonth = selectedMonth === today.toISOString().slice(0, 7);
-    const isOverdueUnpaid = bill.status === 'pending' && isCurrentMonth && bill.dueDay < today.getDate();
+    const billStatus = getBillStatus(bill);
+    const isOverdueUnpaid = billStatus === 'overdue';
 
     return (
       <div style={{
@@ -140,9 +147,9 @@ function BillsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ textAlign: 'right' }}>
             <div className="tabular" style={{ fontWeight: 700, fontSize: 15 }}>{fmt.brl(bill.amount)}</div>
-            <StatusBadge status={bill.status}/>
+            <StatusBadge status={billStatus}/>
           </div>
-          {bill.status !== 'paid' && (
+          {billStatus !== 'paid' && (
             <button className="btn btn-sm" onClick={() => markPaid(bill.id)}
               style={{ background: '#dcfce7', color: '#1F8A4C', borderColor: '#bbf7d0', whiteSpace: 'nowrap' }}>
               <IcoCheck size={13}/>Pagar
