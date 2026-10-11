@@ -1,14 +1,43 @@
 // ─── Toast Host ───────────────────────────────────────────────────────────────
+function ToastItem({ toast, dotColor, onDismiss }) {
+  const ref = React.useRef(null);
+  const startX = React.useRef(null);
+
+  const onTouchStart = e => { startX.current = e.touches[0].clientX; };
+  const onTouchMove = e => {
+    if (startX.current === null || !ref.current) return;
+    const dx = e.touches[0].clientX - startX.current;
+    if (dx > 0) ref.current.style.transform = `translateX(${dx}px)`;
+  };
+  const onTouchEnd = e => {
+    if (startX.current === null) return;
+    const dx = e.changedTouches[0].clientX - startX.current;
+    if (dx > 70) {
+      if (ref.current) ref.current.style.transform = 'translateX(120%)';
+      onDismiss();
+    } else {
+      if (ref.current) { ref.current.style.transition = 'transform .2s'; ref.current.style.transform = ''; }
+    }
+    startX.current = null;
+  };
+
+  return (
+    <div ref={ref} className="toast"
+      onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+      style={{ transition: 'transform .1s', userSelect: 'none' }}>
+      <span className="dot" style={{ background: dotColor(toast) }}/>
+      <span style={{ fontSize: 13.5, fontWeight: 500 }}>{toast.msg}</span>
+    </div>
+  );
+}
+
 function ToastHost() {
-  const { toasts } = useApp();
+  const { toasts, dismissToast } = useApp();
   const dotColor = t => t.type === 'error' ? 'var(--brand-red)' : t.type === 'warning' ? 'var(--brand-amber)' : 'var(--brand-green-soft)';
   return (
     <div className="toast-host">
-      {toasts.map(t => (
-        <div key={t.id} className="toast">
-          <span className="dot" style={{ background: dotColor(t) }}/>
-          <span style={{ fontSize: 13.5, fontWeight: 500 }}>{t.msg}</span>
-        </div>
+      {[...toasts].reverse().map(t => (
+        <ToastItem key={t.id} toast={t} dotColor={dotColor} onDismiss={() => dismissToast(t.id)}/>
       ))}
     </div>
   );

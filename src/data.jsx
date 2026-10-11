@@ -163,10 +163,14 @@ function AppProvider({ children }) {
 
   const toggleTheme = () => setThemeState(t => t === 'light' ? 'dark' : 'light');
 
+  const dismissToast = React.useCallback(id => {
+    setToasts(ts => ts.filter(t => t.id !== id));
+  }, []);
+
   const addToast = React.useCallback((msg, type = 'success') => {
     const id = Date.now();
-    setToasts(ts => [...ts, { id, msg, type }]);
-    setTimeout(() => setToasts(ts => ts.filter(t => t.id !== id)), 4000);
+    setToasts(ts => [...ts.slice(-1), { id, msg, type }]); // keep at most last 2 visible
+    setTimeout(() => setToasts(ts => ts.filter(t => t.id !== id)), 2000);
   }, []);
 
   // ── Auth ──────────────────────────────────────────────────────────────────
@@ -316,7 +320,7 @@ function AppProvider({ children }) {
     <AppContext.Provider value={{
       authed, authLoading, login, register, logout,
       theme, toggleTheme,
-      user, profilePhoto, setProfilePhoto, toasts, addToast,
+      user, profilePhoto, setProfilePhoto, toasts, addToast, dismissToast,
       transactions, addTransaction, editTransaction, deleteTransaction,
       investments, bills, updateBill, addBill, deleteBill,
       goals, addGoal, editGoal, deleteGoal,
