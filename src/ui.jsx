@@ -45,17 +45,21 @@ function ToastHost() {
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 function Modal({ open, onClose, title, subtitle, children, foot, maxWidth = 520 }) {
+  const modalRef = React.useRef(null);
+
   React.useEffect(() => {
     if (!open) return;
     const h = e => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
+    // reset scroll to top after browser finishes rendering
+    const t = setTimeout(() => { if (modalRef.current) modalRef.current.scrollTop = 0; }, 0);
+    return () => { clearTimeout(t); window.removeEventListener('keydown', h); };
   }, [open, onClose]);
 
   if (!open) return null;
   return (
     <div className="modal-backdrop" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="modal" style={{ maxWidth }}>
+      <div className="modal" ref={modalRef} style={{ maxWidth }}>
         <div className="modal-head">
           <div>
             <h3>{title}</h3>
