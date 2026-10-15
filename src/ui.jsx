@@ -57,7 +57,7 @@ function Modal({ open, onClose, title, subtitle, children, foot, maxWidth = 520 
   }, [open, onClose]);
 
   if (!open) return null;
-  return (
+  return ReactDOM.createPortal(
     <div className="modal-backdrop" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal" ref={modalRef} style={{ maxWidth }}>
         <div className="modal-head">
@@ -70,7 +70,8 @@ function Modal({ open, onClose, title, subtitle, children, foot, maxWidth = 520 
         <div className="modal-body">{children}</div>
         {foot && <div className="modal-foot">{foot}</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
