@@ -105,11 +105,42 @@ function BillsPage() {
       type: newBill.type,
       installments: newBill.type === 'parcelada' ? parseInt(newBill.installments) || null : null,
       currentInstallment: newBill.type === 'parcelada' ? 1 : null,
-      startMonth: newBill.startMonth, // all types store startMonth (recorrente uses today's month)
+      startMonth: newBill.startMonth,
     };
     addBill(bill);
     setShowAdd(false);
     setNewBill(emptyBill);
+  };
+
+  // Edit modal state
+  const [editingBill, setEditingBill] = React.useState(null);
+
+  const openEdit = bill => setEditingBill({
+    id: bill.id,
+    name: bill.name,
+    amount: String(bill.amount),
+    dueDay: String(bill.dueDay),
+    category: bill.category,
+    type: bill.type || 'recorrente',
+    installments: String(bill.installments || ''),
+    startMonth: bill.startMonth || selectedMonth,
+    paidMonths: bill.paidMonths || [],
+  });
+
+  const saveEdit = () => {
+    const raw = parseFloat(String(editingBill.amount).replace(',', '.'));
+    if (!editingBill.name || isNaN(raw) || !editingBill.dueDay) return;
+    updateBill(editingBill.id, {
+      name: editingBill.name,
+      amount: raw,
+      dueDay: parseInt(editingBill.dueDay),
+      category: editingBill.category,
+      type: editingBill.type,
+      installments: editingBill.type === 'parcelada' ? parseInt(editingBill.installments) || null : null,
+      startMonth: editingBill.startMonth,
+    });
+    addToast('Conta atualizada!');
+    setEditingBill(null);
   };
 
   const typeLabel = t => ({ recorrente: 'Recorrente', parcelada: 'Parcelada', avulsa: 'Avulsa' }[t] || t);
@@ -155,6 +186,10 @@ function BillsPage() {
               <IcoCheck size={13}/>Pagar
             </button>
           )}
+          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => openEdit(bill)}
+            title="Editar" style={{ flexShrink: 0 }}>
+            <IcoEdit size={15}/>
+          </button>
           <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setConfirmDelete(bill)}
             title="Excluir" style={{ color: 'var(--brand-red)', flexShrink: 0 }}>
             <IcoTrash size={15}/>
@@ -344,6 +379,88 @@ function BillsPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Edit modal */}
+      {editingBill && (
+        <Modal open={!!editingBill} onClose={() => setEditingBill(null)} title="Editar Conta" subtitle="Altere os dados da conta"
+          foot={
+            <>
+              <button className="btn btn-ghost" onClick={() => setEditingBill(null)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={saveEdit}>Salvar</button>
+            </>
+          }>
+          <div style={{ display: 'grid', gap: 14 }}>
+            <div className="field">
+              <label>Tipo de conta</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                {[
+                  { id: 'recorrente', label: 'Recorrente', sub: 'Todo mês' },
+                  { id: 'parcelada',  label: 'Parcelada',  sub: 'Ex: 10x' },
+                  { id: 'avulsa',     label: 'Avulsa',     sub: 'Só 1 mês' },
+                ].map(t => (
+                  <button key={t.id} type="button"
+                    onClick={() => setEditingBill(b => ({ ...b, type: t.id }))}
+                    style={{
+                      padding: '10px 8px', borderRadius: 10, border: `2px solid ${editingBill.type === t.id ? typeColor(t.id) : 'var(--line)'}`,
+                      background: editingBill.type === t.id ? 'var(--bg-2)' : 'transparent',
+                      cursor: 'pointer', textAlign: 'center',
+                    }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: editingBill.type === t.id ? typeColor(t.id) : 'var(--text)' }}>{t.label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{t.sub}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <label>Nome da conta</label>
+              <input className="input" value={editingBill.name} onChange={e => setEditingBill(b => ({ ...b, name: e.target.value }))} placeholder="Ex: Netflix, Parcela TV..."/>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="field">
+                <label>Valor (R$)</label>
+                <input className="input" value={editingBill.amount} onChange={e => setEditingBill(b => ({ ...b, amount: e.target.value }))} placeholder="0,00" inputMode="decimal"/>
+              </div>
+              <div className="field">
+                <label>Dia de vencimento</label>
+                <input className="input" type="number" min="1" max="31" value={editingBill.dueDay} onChange={e => setEditingBill(b => ({ ...b, dueDay: e.target.value }))} placeholder="1-31"/>
+              </div>
+            </div>
+
+            {editingBill.type === 'parcelada' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="field">
+                  <label>Total de parcelas</label>
+                  <input className="input" type="number" min="2" max="120" value={editingBill.installments} onChange={e => setEditingBill(b => ({ ...b, installments: e.target.value }))} placeholder="Ex: 10"/>
+                </div>
+                <div className="field">
+                  <label>Mês inicial</label>
+                  <select className="select" value={editingBill.startMonth} onChange={e => setEditingBill(b => ({ ...b, startMonth: e.target.value }))}>
+                    {monthOptions.map(m => <option key={m} value={m} style={{ textTransform: 'capitalize' }}>{monthLabel(m)}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {editingBill.type === 'avulsa' && (
+              <div className="field">
+                <label>Mês desta conta</label>
+                <select className="select" value={editingBill.startMonth} onChange={e => setEditingBill(b => ({ ...b, startMonth: e.target.value }))}>
+                  {monthOptions.map(m => <option key={m} value={m} style={{ textTransform: 'capitalize' }}>{monthLabel(m)}</option>)}
+                </select>
+              </div>
+            )}
+
+            <div className="field">
+              <label>Categoria</label>
+              <select className="select" value={editingBill.category} onChange={e => setEditingBill(b => ({ ...b, category: e.target.value }))}>
+                {Object.entries(CATEGORIES).filter(([, c]) => c.type === 'expense').map(([id, c]) => <option key={id} value={id}>{c.label}</option>)}
+              </select>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
