@@ -159,41 +159,44 @@ function BillsPage() {
 
     return (
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
         padding: '14px 0', borderBottom: '1px solid var(--line-2)',
         ...(isOverdueUnpaid ? { background: 'rgba(229,72,77,.06)', margin: '0 -20px', padding: '14px 20px', borderBottom: '1px solid rgba(229,72,77,.15)' } : {}),
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Left: icon + info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
           <div style={{ width: 40, height: 40, borderRadius: 10, background: isOverdueUnpaid ? '#fee2e2' : (CATEGORIES[bill.category]?.bg || 'var(--bg-2)'), display: 'grid', placeItems: 'center', flexShrink: 0 }}>
             <IcoReceipt size={18} style={{ color: isOverdueUnpaid ? 'var(--brand-red)' : (CATEGORIES[bill.category]?.color || 'var(--text-2)') }}/>
           </div>
-          <div>
-            <div style={{ fontWeight: 600, fontSize: 14, color: isOverdueUnpaid ? 'var(--brand-red)' : 'var(--text)' }}>{bill.name}</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 600, fontSize: 14, color: isOverdueUnpaid ? 'var(--brand-red)' : 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bill.name}</div>
             <div style={{ fontSize: 12, color: isOverdueUnpaid ? '#ef4444' : 'var(--text-3)', marginTop: 2 }}>{subLabel}{isOverdueUnpaid ? ' · vencida' : ''}</div>
             <span style={{ fontSize: 10, fontWeight: 700, color: typeColor(bill.type), background: 'var(--bg-2)', padding: '1px 6px', borderRadius: 99, marginTop: 3, display: 'inline-block' }}>
               {typeLabel(bill.type || 'recorrente')}
             </span>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+
+        {/* Right: amount+status on top, action buttons below */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
           <div style={{ textAlign: 'right' }}>
             <div className="tabular" style={{ fontWeight: 700, fontSize: 15 }}>{fmt.brl(bill.amount)}</div>
             <StatusBadge status={billStatus}/>
           </div>
-          {billStatus !== 'paid' && (
-            <button className="btn btn-sm" onClick={() => markPaid(bill.id)}
-              style={{ background: '#dcfce7', color: '#1F8A4C', borderColor: '#bbf7d0', whiteSpace: 'nowrap' }}>
-              <IcoCheck size={13}/>Pagar
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            {billStatus !== 'paid' && (
+              <button className="btn btn-sm" onClick={() => markPaid(bill.id)}
+                style={{ background: '#dcfce7', color: '#1F8A4C', borderColor: '#bbf7d0', whiteSpace: 'nowrap', padding: '5px 10px' }}>
+                <IcoCheck size={13}/>Pagar
+              </button>
+            )}
+            <button className="btn btn-ghost btn-icon btn-sm" onClick={() => openEdit(bill)} title="Editar">
+              <IcoEdit size={14}/>
             </button>
-          )}
-          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => openEdit(bill)}
-            title="Editar" style={{ flexShrink: 0 }}>
-            <IcoEdit size={15}/>
-          </button>
-          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setConfirmDelete(bill)}
-            title="Excluir" style={{ color: 'var(--brand-red)', flexShrink: 0 }}>
-            <IcoTrash size={15}/>
-          </button>
+            <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setConfirmDelete(bill)} title="Excluir" style={{ color: 'var(--brand-red)' }}>
+              <IcoTrash size={14}/>
+            </button>
+          </div>
         </div>
       </div>
     );
